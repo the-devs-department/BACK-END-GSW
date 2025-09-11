@@ -1,4 +1,4 @@
 package com.gsw.taskmanager.repository;
 
-public class TarefaRepository {
+public interface TarefaRepository {
 }
