@@ -36,6 +36,9 @@ buildNumber.properties
 .gradle/
 build/
 
+.factorypath
+.metadata/*
+
 ### Eclipse ###
 .project
 .classpath
