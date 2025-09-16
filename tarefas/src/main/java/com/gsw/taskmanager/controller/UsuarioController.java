@@ -1,15 +1,24 @@
 package com.gsw.taskmanager.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
 import com.gsw.taskmanager.dto.UsuarioResponseDto;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.service.UsuarioService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("usuarios")
@@ -38,7 +47,7 @@ public class UsuarioController {
         UsuarioResponseDto novoUsuario = usuarioService.criarUsuario(usuario);
         return ResponseEntity.ok(novoUsuario);
     }
-
+// eu to segurando
     //TODO ENDPOINT /UPDATE
     @PutMapping("/atualizar")
     public ResponseEntity<UsuarioResponseDto> atualizarUsuario(@RequestBody @Valid UsuarioAlteracaoDto usuario) {
