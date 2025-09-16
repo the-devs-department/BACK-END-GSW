@@ -33,6 +33,12 @@ public class Usuario {
     private boolean ativo;
     private List<Tarefa> tarefas = new ArrayList<>();
 
+    private List<String> roles = new ArrayList<>();
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
     public String getId() {
         return id;
     }

@@ -1,5 +1,6 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.LoginRequest;
 import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
 import com.gsw.taskmanager.dto.UsuarioResponseDto;
 import com.gsw.taskmanager.entity.Usuario;
@@ -9,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +24,12 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
 
 
     public List<UsuarioResponseDto> listarTodos() {
@@ -54,8 +64,10 @@ public class UsuarioService {
         if (usuarioEncontrado.isPresent()){
             throw new DataIntegrityViolationException("Usuário já existe");
         }
+        user.setSenha(passwordEncoder.encode(user.getSenha()));
         user.setAtivo(true);
         user.setDataCadastro(LocalDateTime.now());
+
         usuarioRepository.save(user);
 
         return new UsuarioResponseDto(
@@ -65,7 +77,6 @@ public class UsuarioService {
                 user.isAtivo(),
                 user.getTarefas()
             );
-        //todo criptografar a senha
     }
 
     public UsuarioResponseDto atualizarUsuario(UsuarioAlteracaoDto usuario) {
@@ -95,5 +106,18 @@ public class UsuarioService {
         } else {
             throw new BusinessException("Usuário já está deletado.");
         }
+    }
+
+    public String autenticar(LoginRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado."));
+        if (!usuario.isAtivo()) {
+            throw new IllegalStateException("Usuário inativo");
+        }
+
+        if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
+            throw new BadCredentialsException("Usuário ou senha inválidos");
+        }
+        return jwtService.generateToken(usuario);
     }
 }
