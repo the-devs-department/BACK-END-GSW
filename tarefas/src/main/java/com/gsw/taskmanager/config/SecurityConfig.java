@@ -4,11 +4,13 @@ import com.gsw.taskmanager.service.JwtService;
 import com.gsw.taskmanager.service.TokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@Profile("!test")
 public class SecurityConfig {
 
     private final JwtService jwtService;
@@ -20,7 +22,6 @@ public class SecurityConfig {
         this.tokenService = tokenService;
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtAuthFilter jwtFilter = new JwtAuthFilter(jwtService, tokenService);
@@ -28,7 +29,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/usuarios/**").authenticated()
+                    .requestMatchers("/usuarios").authenticated()
+                    .requestMatchers("/usuarios/criar").permitAll()
+                    .requestMatchers("/usuarios/atualizar").authenticated()
                     .requestMatchers("/auth/login").permitAll()
                     .anyRequest().permitAll()
             )

@@ -35,6 +35,11 @@ public class Usuario {
 
     private List<String> roles = new ArrayList<>();
 
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
     public List<String> getRoles() {
         return roles;
     }
