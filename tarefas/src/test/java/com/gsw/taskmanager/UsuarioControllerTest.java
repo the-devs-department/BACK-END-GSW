@@ -175,4 +175,11 @@ public class UsuarioControllerTest {
                     .andExpect(status().isNoContent());
         }
     }
+
+    @Test
+    void naoDeveExcluirUsuario() throws Exception {
+        mockMvc.perform(delete("/usuarios/" + "UUIDINVALIDO")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 }
