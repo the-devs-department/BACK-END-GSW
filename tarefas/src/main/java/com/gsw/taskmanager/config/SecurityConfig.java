@@ -29,14 +29,12 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/usuarios").authenticated()
                     .requestMatchers("/usuarios/criar").permitAll()
-                    .requestMatchers("/usuarios/atualizar").authenticated()
                     .requestMatchers("/auth/login").permitAll()
-                    .anyRequest().permitAll()
+                    .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-            .httpBasic(httpBasic -> httpBasic.disable())  // disable default Basic Auth
+            .httpBasic(httpBasic -> httpBasic.disable())
             .formLogin(form -> form.disable());
         return http.build();
     }
