@@ -66,3 +66,11 @@ Desktop.ini
 ### Outros ###
 # Arquivos locais de ambiente
 *.env
+
+### Uploads ###
+# Ignorar todos os arquivos dentro da pasta uploads, mas manter a estrutura de pastas
+uploads/*
+!uploads/.gitkeep
+!uploads/test/
+uploads/test/*
+!uploads/test/.gitkeep

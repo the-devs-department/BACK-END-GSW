@@ -1,5 +1,10 @@
 package com.gsw.taskmanager.exception;
 
+import com.gsw.taskmanager.exception.anexo.AcessoNegadoAnexoException;
+import com.gsw.taskmanager.exception.anexo.AnexoNaoEncontradoException;
+import com.gsw.taskmanager.exception.anexo.LimiteAnexosExcedidoException;
+import com.gsw.taskmanager.exception.anexo.TarefaNaoEncontradaException;
+import com.gsw.taskmanager.exception.anexo.TipoAnexoInvalidoException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +52,56 @@ public class GlobalExceptionHandler {
                 ex.getBindingResult().getFieldErrors().stream()
                         .map(err -> err.getField() + ": " + err.getDefaultMessage())
                         .toList());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(TarefaNaoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> handleTarefaNaoEncontradaException(TarefaNaoEncontradaException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Task not found");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(AnexoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleAnexoNaoEncontradoException(AnexoNaoEncontradoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Attachment not found");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(AcessoNegadoAnexoException.class)
+    public ResponseEntity<Map<String, Object>> handleAcessoNegadoAnexoException(AcessoNegadoAnexoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put("error", "Access denied");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    @ExceptionHandler(LimiteAnexosExcedidoException.class)
+    public ResponseEntity<Map<String, Object>> handleLimiteAnexosExcedidoException(LimiteAnexosExcedidoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Attachment limit exceeded");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(TipoAnexoInvalidoException.class)
+    public ResponseEntity<Map<String, Object>> handleTipoAnexoInvalidoException(TipoAnexoInvalidoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Invalid attachment type");
+        body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
