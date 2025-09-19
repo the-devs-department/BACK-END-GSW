@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
@@ -50,6 +51,9 @@ class AnexoControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private Usuario usuario;
     private Tarefa tarefa;
     private String token;
@@ -65,8 +69,8 @@ class AnexoControllerTest {
         // Criar usuário de teste
         usuario = new Usuario();
         usuario.setNome("João Silva");
-        usuario.setEmail("joao@example.com");
-        usuario.setSenha("$2a$10$dummyHashedPassword"); // Password já hasheada para testes
+        usuario.setEmail("thedevs@gsw.com");
+        usuario.setSenha(passwordEncoder.encode("thedevs123")); // Senha criptografada com PasswordEncoder
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAtivo(true);
         usuario.setTarefas(new ArrayList<>());
@@ -286,9 +290,9 @@ class AnexoControllerTest {
     @Test
     void removerAnexo_DeveRetornar403_QuandoUsuarioNaoTemPermissao() throws Exception {
         Usuario outroUsuario = new Usuario();
-        outroUsuario.setNome("Maria Santos");
-        outroUsuario.setEmail("maria@example.com");
-        outroUsuario.setSenha("$2a$10$dummyHashedPassword");
+        outroUsuario.setNome("Usuario Teste");
+        outroUsuario.setEmail("usuario@gsw.com");
+        outroUsuario.setSenha(passwordEncoder.encode("usuario123")); // Senha criptografada com PasswordEncoder
         outroUsuario.setDataCadastro(LocalDateTime.now());
         outroUsuario.setAtivo(true);
         outroUsuario.setTarefas(new ArrayList<>());
