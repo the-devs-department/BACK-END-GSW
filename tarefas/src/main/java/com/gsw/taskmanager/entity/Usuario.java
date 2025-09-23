@@ -5,12 +5,15 @@ import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Getter 
+@Setter 
 @Document(collection = "users")
 @NoArgsConstructor
 @AllArgsConstructor

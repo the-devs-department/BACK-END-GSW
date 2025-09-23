@@ -2,19 +2,16 @@ package com.gsw.taskmanager.service;
 
 import com.gsw.taskmanager.entity.RevokedToken;
 import com.gsw.taskmanager.repository.RevokedTokenRepository;
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor; 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor 
 public class TokenService {
 
-    @Autowired
     private final RevokedTokenRepository revokedRepo;
 
     public void revoke(String token, LocalDateTime expiry) {
@@ -27,8 +24,7 @@ public class TokenService {
     }
 
     public boolean isRevoked(String token) {
-        boolean isRevolked = revokedRepo.findByToken(token).isPresent();
-        return isRevolked;
+        return revokedRepo.findByToken(token).isPresent();
     }
 
     @Scheduled(cron = "0 0 * * * *")

@@ -73,4 +73,8 @@ public class TarefaService {
             throw new BusinessException("Tarefa já está deletada.");
         }
     }
+
+    public Tarefa salvarTarefa(Tarefa tarefa) {
+    return tarefaRepository.save(tarefa);
+}
 }

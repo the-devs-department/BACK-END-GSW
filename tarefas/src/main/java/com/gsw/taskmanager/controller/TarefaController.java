@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.gsw.taskmanager.dto.AtribuicaoRequest;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.service.TarefaService;
 
@@ -22,6 +22,16 @@ public class TarefaController {
 
     @Autowired
     private TarefaService tarefaService;
+
+    @Autowired
+    private AtribuicaoService atribuicaoService;
+
+@PostMapping("/{tarefaId}/atribuir")
+    public ResponseEntity<Void> atribuirTarefa(@PathVariable String tarefaId, @RequestBody AtribuicaoRequest request) {
+        atribuicaoService.atribuirUsuarioATarefa(tarefaId, request.usuarioId());
+        return ResponseEntity.ok().build();
+    }
+
 
     // Criar tarefa
     @PostMapping("/criar")
