@@ -24,6 +24,9 @@ public class Tarefa {
     private String id;
 
     @NotNull
+    private String status;
+
+    @NotNull
     private String titulo;
 
     @NotNull
@@ -37,7 +40,7 @@ public class Tarefa {
     @NotNull
     private String tema;
 
-    private LocalDateTime dataCriacao; // quando foi criada
+    private LocalDateTime dataCriacao; 
 
     private boolean ativo; // controle de soft delete
 

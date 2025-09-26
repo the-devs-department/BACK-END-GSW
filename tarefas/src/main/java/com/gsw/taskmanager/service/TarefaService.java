@@ -59,7 +59,10 @@ public class TarefaService {
         if (tarefaAtualizada.getTema() != null) {
             tarefaBanco.setTema(tarefaAtualizada.getTema());
         }
-
+        if(tarefaAtualizada.getStatus()!=null){
+            tarefaBanco.setStatus(tarefaAtualizada.getStatus());
+        }
+       
         return tarefaRepository.save(tarefaBanco);
     }
 
