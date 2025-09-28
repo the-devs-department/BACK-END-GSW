@@ -1,15 +1,14 @@
 package com.gsw.taskmanager.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.TarefaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TarefaService {
@@ -20,6 +19,14 @@ public class TarefaService {
     // LISTAR TODAS (apenas ativas)
     public List<Tarefa> listarTodas() {
         return tarefaRepository.findAll()
+                .stream()
+                .filter(Tarefa::isAtivo)
+                .toList();
+    }
+
+    // Listar tarefas por membro da equipe (responsável)
+    public List<Tarefa> listarPorResponsavel(String usuarioId) {
+        return tarefaRepository.findByResponsavel(usuarioId)
                 .stream()
                 .filter(Tarefa::isAtivo)
                 .toList();
@@ -62,7 +69,7 @@ public class TarefaService {
         if(tarefaAtualizada.getStatus()!=null){
             tarefaBanco.setStatus(tarefaAtualizada.getStatus());
         }
-       
+        
         return tarefaRepository.save(tarefaBanco);
     }
 
@@ -78,6 +85,7 @@ public class TarefaService {
     }
 
     public Tarefa salvarTarefa(Tarefa tarefa) {
-    return tarefaRepository.save(tarefa);
-}
+        return tarefaRepository.save(tarefa);
+    }
+
 }

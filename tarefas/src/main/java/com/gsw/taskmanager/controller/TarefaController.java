@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.gsw.taskmanager.dto.AtribuicaoRequest;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.service.TarefaService;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/tarefas")
@@ -40,11 +41,19 @@ public class TarefaController {
         return ResponseEntity.status(201).body(novaTarefa); // 201 Created
     }
 
-    // Listar todas
+    // Listar todas OU filtrar por responsável
     @GetMapping
-    public ResponseEntity<List<Tarefa>> listarTodas() {
-        return ResponseEntity.ok(tarefaService.listarTodas()); // 200 OK
+    public ResponseEntity<List<Tarefa>> listar(
+        @RequestParam(name = "responsavel", required = false) String responsavel) {
+
+    List<Tarefa> tarefas;
+    if (responsavel != null && !responsavel.isEmpty()) {
+        tarefas = tarefaService.listarPorResponsavel(responsavel);
+    } else {
+        tarefas = tarefaService.listarTodas();
     }
+    return ResponseEntity.ok(tarefas);
+}
 
     // Buscar por id
     @GetMapping("/{id}")
