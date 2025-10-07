@@ -1,0 +1,76 @@
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+
+# BlueJ
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+### Gradle (caso algum dia use) ###
+.gradle/
+build/
+
+.factorypath
+.metadata/*
+
+### Eclipse ###
+.project
+.classpath
+.settings/
+bin/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### MacOS ###
+.DS_Store
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Outros ###
+# Arquivos locais de ambiente
+*.env
+
+### Uploads ###
+# Ignorar todos os arquivos dentro da pasta uploads, mas manter a estrutura de pastas
+uploads/*
+!uploads/.gitkeep
+!uploads/test/
+uploads/test/*
+!uploads/test/.gitkeep
