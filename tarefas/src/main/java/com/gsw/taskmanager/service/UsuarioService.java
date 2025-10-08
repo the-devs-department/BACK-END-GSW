@@ -69,7 +69,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setEmail(user.email());
         usuario.setNome(user.nome());
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        usuario.setSenha(passwordEncoder.encode(user.senha()));
         usuario.setAtivo(true);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setTarefas(new ArrayList<>());

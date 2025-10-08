@@ -1,6 +1,7 @@
 package com.gsw.taskmanager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.repository.UsuarioRepository;
@@ -92,8 +93,7 @@ public class UsuarioControllerTest {
 
     @Test
     void deveCriarUmUsuarioComInformacoesValidas() throws Exception {
-
-        Usuario novoUsuario = new Usuario(null, "Teste", "teste@gmail.com", "123456", LocalDateTime.now(), true, List.of(), List.of("USER"));
+        CriacaoUsuarioDto novoUsuario = new CriacaoUsuarioDto("Teste", "teste@gmail.com", "123456789sS€$", List.of());
         String usuarioJson = objectMapper.writeValueAsString(novoUsuario);
 
         mockMvc.perform(post("/usuarios/criar")

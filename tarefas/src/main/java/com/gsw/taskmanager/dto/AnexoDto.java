@@ -1,7 +1,7 @@
 package com.gsw.taskmanager.dto;
 
-import com.gsw.taskmanager.entity.Tarefa.TipoAnexo;
 
+import com.gsw.taskmanager.enums.TipoAnexo;
 import lombok.Data;
 
 @Data

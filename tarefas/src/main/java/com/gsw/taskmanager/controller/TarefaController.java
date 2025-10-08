@@ -27,7 +27,7 @@ public class TarefaController {
     @Autowired
     private AtribuicaoService atribuicaoService;
 
-@PostMapping("/{tarefaId}/atribuir")
+    @PostMapping("/{tarefaId}/atribuir")
     public ResponseEntity<Void> atribuirTarefa(@PathVariable String tarefaId, @RequestBody AtribuicaoRequest request) {
         atribuicaoService.atribuirUsuarioATarefa(tarefaId, request.usuarioId());
         return ResponseEntity.ok().build();
@@ -38,7 +38,7 @@ public class TarefaController {
     @PostMapping("/criar")
     public ResponseEntity<Tarefa> criar(@RequestBody Tarefa tarefa) {
         Tarefa novaTarefa = tarefaService.criar(tarefa);
-        return ResponseEntity.status(201).body(novaTarefa); // 201 Created
+        return ResponseEntity.status(201).body(novaTarefa);
     }
 
     // Listar todas OU filtrar por responsável

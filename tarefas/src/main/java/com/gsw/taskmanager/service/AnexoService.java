@@ -6,6 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
 
+import com.gsw.taskmanager.entity.Anexo;
+import com.gsw.taskmanager.entity.Tarefa;
+import com.gsw.taskmanager.enums.TipoAnexo;
 import org.bson.types.ObjectId;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gsw.taskmanager.dto.AnexoDto;
-import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.exception.anexo.AcessoNegadoAnexoException;
 import com.gsw.taskmanager.exception.anexo.AnexoNaoEncontradoException;
 import com.gsw.taskmanager.exception.anexo.LimiteAnexosExcedidoException;
@@ -34,7 +36,8 @@ public class AnexoService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    public Tarefa.Anexo adicionarAnexoNaTarefa(String tarefaId, AnexoDto anexoDto) {
+    // TODO REGISTRAR ADIÇÃO DE ANEXO NA TAREFA
+    public Anexo adicionarAnexoNaTarefa(String tarefaId, AnexoDto anexoDto) {
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
@@ -44,16 +47,15 @@ public class AnexoService {
             validarTipoArquivo(anexoDto.getUrl(), anexoDto.getTipo());
         }
 
-        Tarefa.Anexo novoAnexo = Tarefa.Anexo.builder()
-                .id(new ObjectId().toString())
-                .tarefaId(tarefaId)
-                .usuarioId(anexoDto.getUsuarioId())
-                .nome(anexoDto.getNome())
-                .tipo(anexoDto.getTipo())
-                .url(anexoDto.getUrl())
-                .tamanho(anexoDto.getTamanho())
-                .dataUpload(LocalDateTime.now())
-                .build();
+        Anexo novoAnexo = new Anexo();
+        novoAnexo.setId(new ObjectId().toString());
+        novoAnexo.setUsuarioId(anexoDto.getUsuarioId());
+        novoAnexo.setTarefaId(tarefaId);
+        novoAnexo.setDataUpload(LocalDateTime.now());
+        novoAnexo.setTipo(anexoDto.getTipo());
+        novoAnexo.setUrl(anexoDto.getUrl());
+        novoAnexo.setTamanho(anexoDto.getTamanho());
+        novoAnexo.setNome(anexoDto.getNome());
 
         tarefa.getAnexos().add(novoAnexo);
         tarefaRepository.save(tarefa);
@@ -61,13 +63,14 @@ public class AnexoService {
         return novoAnexo;
     }
 
-    public Tarefa.Anexo adicionarAnexoComArquivo(String tarefaId, String usuarioId, MultipartFile arquivo) {
+    // TODO REGISTRAR ADIÇÃO DE ANEXO NA TAREFA
+    public Anexo adicionarAnexoComArquivo(String tarefaId, String usuarioId, MultipartFile arquivo) {
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
         validarLimiteAnexos(tarefa, arquivo.getSize());
 
-        Tarefa.TipoAnexo tipoAnexo = determinarTipoAnexo(arquivo.getContentType());
+        TipoAnexo tipoAnexo = determinarTipoAnexo(arquivo.getContentType());
         if (tipoAnexo == null) {
             throw new TipoAnexoInvalidoException(arquivo.getContentType(), arquivo.getOriginalFilename());
         }
@@ -75,16 +78,15 @@ public class AnexoService {
         String nomeArquivoArmazenado = fileStorageService.storeFile(arquivo);
 
         // Criar o anexo
-        Tarefa.Anexo novoAnexo = Tarefa.Anexo.builder()
-                .id(new ObjectId().toString())
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome(arquivo.getOriginalFilename())
-                .tipo(tipoAnexo)
-                .url(nomeArquivoArmazenado)
-                .tamanho(arquivo.getSize())
-                .dataUpload(LocalDateTime.now())
-                .build();
+        Anexo novoAnexo = new Anexo();
+        novoAnexo.setId(new ObjectId().toString());
+        novoAnexo.setUsuarioId(usuarioId);
+        novoAnexo.setTarefaId(tarefaId);
+        novoAnexo.setDataUpload(LocalDateTime.now());
+        novoAnexo.setTipo(tipoAnexo);
+        novoAnexo.setUrl(nomeArquivoArmazenado);
+        novoAnexo.setTamanho(arquivo.getSize());
+        novoAnexo.setNome(arquivo.getOriginalFilename());
 
         tarefa.getAnexos().add(novoAnexo);
         tarefaRepository.save(tarefa);
@@ -92,14 +94,14 @@ public class AnexoService {
         return novoAnexo;
     }
 
-    public List<Tarefa.Anexo> listarAnexosDaTarefa(String tarefaId) {
+    public List<Anexo> listarAnexosDaTarefa(String tarefaId) {
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
         return tarefa.getAnexos();
     }
 
-    public Tarefa.Anexo buscarAnexoPorId(String tarefaId, String anexoId) {
+    public Anexo buscarAnexoPorId(String tarefaId, String anexoId) {
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
@@ -109,11 +111,12 @@ public class AnexoService {
                 .orElseThrow(() -> new AnexoNaoEncontradoException("Anexo não encontrado"));
     }
 
-    public Tarefa.Anexo atualizarAnexo(String tarefaId, String anexoId, AnexoDto anexoDto) {
+    // TODO REGISTRAR ALTERAÇÃO DO ANEXO
+    public Anexo atualizarAnexo(String tarefaId, String anexoId, AnexoDto anexoDto) {
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
-        Tarefa.Anexo anexoEncontrado = tarefa.getAnexos().stream()
+        Anexo anexoEncontrado = tarefa.getAnexos().stream()
                 .filter(anexo -> anexo.getId().equals(anexoId))
                 .findFirst()
                 .orElseThrow(() -> new AnexoNaoEncontradoException("Anexo não encontrado"));
@@ -132,6 +135,7 @@ public class AnexoService {
         return anexoEncontrado;
     }
 
+    // TODO REGISTRAR REMOÇÃO DO ANEXO
     public void removerAnexo(String tarefaId, String anexoId) {
 
         String usuarioAtual = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -140,7 +144,7 @@ public class AnexoService {
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
 
-        Tarefa.Anexo anexo = tarefa.getAnexos().stream()
+        Anexo anexo = tarefa.getAnexos().stream()
                 .filter(a -> a.getId().equals(anexoId))
                 .findFirst()
                 .orElseThrow(() -> new AnexoNaoEncontradoException("Attachment not found"));
@@ -174,7 +178,7 @@ public class AnexoService {
         }
     }
 
-    public void validarTipoArquivo(String caminhoArquivo, Tarefa.TipoAnexo tipoEsperado) {
+    public void validarTipoArquivo(String caminhoArquivo, TipoAnexo tipoEsperado) {
         try {
             String mimeTypeDetectado = Files.probeContentType(Paths.get(caminhoArquivo));
             
@@ -191,7 +195,7 @@ public class AnexoService {
         }
     }
 
-    private void validarPermissaoExclusao(Tarefa.Anexo anexo, Tarefa tarefa, String usuarioAtual) {
+    private void validarPermissaoExclusao(Anexo anexo, Tarefa tarefa, String usuarioAtual) {
         boolean podeExcluir = anexo.getUsuarioId().equals(usuarioAtual) || 
                              tarefa.getResponsavel().equals(usuarioAtual);
         
@@ -199,19 +203,6 @@ public class AnexoService {
             throw new AcessoNegadoAnexoException("Você não tem permissão para excluir este anexo. " +
                 "Apenas o usuário que enviou o anexo ou o criador da tarefa podem excluí-lo.");
         }
-    }
-
-    public boolean isTipoSuportado(String mimeType) {
-        if (mimeType == null) {
-            return false;
-        }
-        
-        for (Tarefa.TipoAnexo tipo : Tarefa.TipoAnexo.values()) {
-            if (tipo.getMimeType().equalsIgnoreCase(mimeType)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public long calcularTamanhoTotalAnexos(Tarefa tarefa) {
@@ -224,24 +215,12 @@ public class AnexoService {
                 .sum();
     }
 
-    public long calcularEspacoDisponivelMB(Tarefa tarefa) {
-        long tamanhoTotalAtual = calcularTamanhoTotalAnexos(tarefa);
-        long espacoDisponivel = LIMITE_TOTAL_ANEXOS_BYTES - tamanhoTotalAtual;
-        return espacoDisponivel / (1024 * 1024); // Retornar em MB
-    }
-
-    public long calcularEspacoDisponivelMBPorId(String tarefaId) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
-        return calcularEspacoDisponivelMB(tarefa);
-    }
-
-    private Tarefa.TipoAnexo determinarTipoAnexo(String contentType) {
+    private TipoAnexo determinarTipoAnexo(String contentType) {
         if (contentType == null) {
             return null;
         }
 
-        for (Tarefa.TipoAnexo tipo : Tarefa.TipoAnexo.values()) {
+        for (TipoAnexo tipo : TipoAnexo.values()) {
             if (tipo.getMimeType().equalsIgnoreCase(contentType)) {
                 return tipo;
             }
