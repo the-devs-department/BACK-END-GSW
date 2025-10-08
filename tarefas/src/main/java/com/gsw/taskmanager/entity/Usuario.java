@@ -22,25 +22,21 @@ public class Usuario {
     @Id
     private String id;
 
-    @NotNull
     private String nome;
 
-    @NotNull
     private String email;
 
-    @NotNull
-    @Length(min = 6, max = 20)
     private String senha;
 
     private LocalDateTime dataCadastro;
     private boolean ativo;
+
     private List<Tarefa> tarefas = new ArrayList<>();
 
     private List<String> roles = new ArrayList<>();
 
-
     public void setRoles(List<String> roles) {
-        this.roles = roles;
+        this.roles.addAll(roles);
     }
 
     public List<String> getRoles() {

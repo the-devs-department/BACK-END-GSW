@@ -1,5 +1,6 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
 import com.gsw.taskmanager.dto.LoginRequest;
 import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
 import com.gsw.taskmanager.dto.UsuarioResponseDto;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,24 +60,29 @@ public class UsuarioService {
         )).orElseThrow();
     }
 
-    public UsuarioResponseDto criarUsuario(Usuario user){
-        Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.getEmail());
+    public UsuarioResponseDto criarUsuario(CriacaoUsuarioDto user){
+        Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.email());
 
         if (usuarioEncontrado.isPresent()){
             throw new DataIntegrityViolationException("Usuário já existe");
         }
-        user.setSenha(passwordEncoder.encode(user.getSenha()));
-        user.setAtivo(true);
-        user.setDataCadastro(LocalDateTime.now());
+        Usuario usuario = new Usuario();
+        usuario.setEmail(user.email());
+        usuario.setNome(user.nome());
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        usuario.setAtivo(true);
+        usuario.setDataCadastro(LocalDateTime.now());
+        usuario.setTarefas(new ArrayList<>());
+        usuario.setRoles(List.of("ROLE_USER"));
 
-        usuarioRepository.save(user);
+        usuarioRepository.save(usuario);
 
         return new UsuarioResponseDto(
-                user.getNome(),
-                user.getEmail(),
-                user.getDataCadastro(),
-                user.isAtivo(),
-                user.getTarefas()
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getDataCadastro(),
+                usuario.isAtivo(),
+                usuario.getTarefas()
             );
     }
 
