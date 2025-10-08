@@ -5,6 +5,7 @@ import com.gsw.taskmanager.dto.TokenResponse;
 import com.gsw.taskmanager.service.JwtService;
 import com.gsw.taskmanager.service.TokenService;
 import com.gsw.taskmanager.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<TokenResponse> login(@RequestBody @Valid LoginRequest request) {
         String token = usuarioService.autenticar(request);
         return ResponseEntity.ok(new TokenResponse(token));
     }

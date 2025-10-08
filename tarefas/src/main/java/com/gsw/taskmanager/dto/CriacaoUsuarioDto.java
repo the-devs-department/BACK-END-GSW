@@ -4,7 +4,6 @@ import com.gsw.taskmanager.entity.Tarefa;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
-import javax.management.relation.Role;
 import java.util.List;
 
 public record CriacaoUsuarioDto (

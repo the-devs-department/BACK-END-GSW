@@ -1,4 +1,6 @@
 package com.gsw.taskmanager.dto;
 
-public record LoginRequest(String email, String senha) {
+import jakarta.validation.constraints.NotNull;
+
+public record LoginRequest(@NotNull String email,@NotNull String senha) {
 }
