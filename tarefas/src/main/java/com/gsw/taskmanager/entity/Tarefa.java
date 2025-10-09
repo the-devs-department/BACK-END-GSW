@@ -1,24 +1,24 @@
 package com.gsw.taskmanager.entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
 import com.gsw.taskmanager.enums.Status;
-import com.gsw.taskmanager.enums.TipoAnexo;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Document(collection = "tasks")
 @Getter
 @Setter
-public class Tarefa {
+public class Tarefa implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     private String id;
@@ -43,8 +43,6 @@ public class Tarefa {
     private LocalDateTime dataCriacao; 
 
     private boolean ativo;
-
-    private List<AuditoriaLog> modificacoes = new ArrayList<>();
 
     // ANEXOS:
     private List<Anexo> anexos = new ArrayList<>();

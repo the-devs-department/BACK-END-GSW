@@ -1,13 +1,16 @@
 package com.gsw.taskmanager.service;
 
 import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.taskmanager.exception.BusinessException;
+import com.gsw.taskmanager.repository.UsuarioRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.time.Instant;
@@ -23,12 +26,17 @@ import java.util.Base64;
 public class JwtService {
 
     private static final String AES_ALGORITHM = "AES";
+    private final UsuarioRepository usuarioRepository;
 
     @Value("${app.jwt.secret}")
     private String secret;
 
     @Value("${app.jwt.expiration}")
     private long expiration;
+
+    public JwtService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
@@ -39,10 +47,11 @@ public class JwtService {
         Instant now = Instant.now();
         String jwt = Jwts.builder()
                 .setId(UUID.randomUUID().toString())
-                .setSubject(usuario.getId())
+                .setSubject(usuario.getEmail())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(expiration)))
-                .claim("email",usuario.getEmail())
+                .claim("id", usuario.getId())
+                .claim("nome", usuario.getNome())
                 .claim("roles", usuario.getRoles())
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
@@ -50,17 +59,19 @@ public class JwtService {
         return encrypt(jwt);
     }
 
-    public Claims parseEncryptedToken(String encryptedToken) {
+    public UsernamePasswordAuthenticationToken parseEncryptedToken(String encryptedToken) {
         String jwt = decrypt(encryptedToken);
-        return parseAllClaims(jwt);
+        return buildAuthenticationFromJwt(jwt);
     }
 
     public <T> T extractClaim(String token, java.util.function.Function<Claims, T> resolver) {
-        return resolver.apply(parseEncryptedToken(token));
+        String jwt = decrypt(token);
+        Claims claims = parseClaims(jwt);
+        return resolver.apply(claims);
     }
 
     public String extractUserId(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, claims -> claims.get("id", String.class));
     }
 
     public LocalDateTime getExpiry(String token) {
@@ -71,15 +82,29 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token) {
-        boolean isExpired = extractClaim(token, Claims::getExpiration).before(new Date());
-        return !isExpired;
+        try {
+            String jwt = decrypt(token);
+            Claims claims = parseClaims(jwt);
+            return claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
-    private Claims parseAllClaims(String token) {
+    private UsernamePasswordAuthenticationToken buildAuthenticationFromJwt(String jwt) {
+        Claims claims = parseClaims(jwt);
+        String email = claims.getSubject();
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+        return new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+    }
+
+    private Claims parseClaims(String jwt) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(jwt)
                 .getBody();
     }
 

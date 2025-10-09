@@ -1,11 +1,18 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
+import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
+import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.TarefaRepository;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +22,11 @@ public class TarefaService {
 
     @Autowired
     private TarefaRepository tarefaRepository;
+
+    @Autowired
+    private AuditoriaLogService logService;
+    @Autowired
+    private AuditoriaLogService auditoriaLogService;
 
     // LISTAR TODAS (apenas ativas)
     public List<Tarefa> listarTodas() {
@@ -43,13 +55,26 @@ public class TarefaService {
     // CRIAR
     public Tarefa criar(Tarefa tarefa) {
         tarefa.setAtivo(true);
-        tarefa.setDataCriacao(LocalDateTime.now()); // se tiver esse campo
-        return tarefaRepository.save(tarefa);
+        tarefa.setDataCriacao(LocalDateTime.now());
+
+        try {
+            Tarefa tarefaSalva = tarefaRepository.save(tarefa);
+            AuditoriaLog log = logService.registrarCriacao(tarefaSalva);
+            System.out.println(log.getModificacoes());
+
+            tarefaRepository.save(tarefaSalva);
+
+            return tarefaSalva;
+
+        } catch (Exception e) {
+            throw new BusinessException("Erro ao criar tarefa");
+        }
     }
 
     // ATUALIZAR
     public Tarefa atualizar(String id, Tarefa tarefaAtualizada) {
         Tarefa tarefaBanco = tarefaRepository.findById(id).orElseThrow();
+        Tarefa tarefaAntiga = SerializationUtils.clone(tarefaBanco);
 
         if (tarefaAtualizada.getTitulo() != null) {
             tarefaBanco.setTitulo(tarefaAtualizada.getTitulo());
@@ -69,8 +94,14 @@ public class TarefaService {
         if(tarefaAtualizada.getStatus()!=null){
             tarefaBanco.setStatus(tarefaAtualizada.getStatus());
         }
-        
-        return tarefaRepository.save(tarefaBanco);
+
+        try {
+            Tarefa tarefaSalva = tarefaRepository.save(tarefaBanco);
+            auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaBanco);
+            return tarefaSalva;
+        } catch (Exception e) {
+            throw new BusinessException("Erro ao atualizar tarefa");
+        }
     }
 
     // "DELETAR" (soft delete)
@@ -79,13 +110,14 @@ public class TarefaService {
         if (tarefa.isAtivo()) {
             tarefa.setAtivo(false);
             tarefaRepository.save(tarefa);
+            auditoriaLogService.registrarExclusao(tarefa);
         } else {
             throw new BusinessException("Tarefa já está deletada.");
         }
     }
 
-    public Tarefa salvarTarefa(Tarefa tarefa) {
-        return tarefaRepository.save(tarefa);
+    public void salvarTarefa(Tarefa tarefa) {
+        tarefaRepository.save(tarefa);
     }
 
 }

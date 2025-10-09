@@ -7,8 +7,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Getter 
@@ -16,7 +22,9 @@ import java.util.List;
 @Document(collection = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class Usuario implements UserDetails, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     private String id;
@@ -34,65 +42,18 @@ public class Usuario {
 
     private List<String> roles = new ArrayList<>();
 
-    public void setRoles(List<String> roles) {
-        this.roles.addAll(roles);
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream().map(SimpleGrantedAuthority::new).toList();
     }
 
-    public List<String> getRoles() {
-        return roles;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public @NotNull String getNome() {
-        return nome;
-    }
-
-    public void setNome(@NotNull String nome) {
-        this.nome = nome;
-    }
-
-    public @NotNull String getEmail() {
-        return email;
-    }
-
-    public void setEmail(@NotNull String email) {
-        this.email = email;
-    }
-
-    public @NotNull @Length(min = 6, max = 20) String getSenha() {
+    @Override
+    public String getPassword() {
         return senha;
     }
 
-    public void setSenha(@NotNull @Length(min = 6, max = 20) String senha) {
-        this.senha = senha;
+    @Override
+    public String getUsername() {
+        return email;
     }
-
-    public LocalDateTime getDataCadastro() {
-        return dataCadastro;
-    }
-
-    public void setDataCadastro(LocalDateTime dataCadastro) {
-        this.dataCadastro = dataCadastro;
-    }
-
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public List<Tarefa> getTarefas() {
-        return tarefas;
-    }
-
-    public void setTarefas(List<Tarefa> tarefas) {
-        this.tarefas = tarefas;
-    }
-
-
 }
