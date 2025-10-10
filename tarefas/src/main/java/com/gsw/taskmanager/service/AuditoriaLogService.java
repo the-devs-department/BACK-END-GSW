@@ -1,5 +1,6 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.AuditoriaResponseDto;
 import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
 import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.AuditoriaLog;
@@ -7,12 +8,14 @@ import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.AuditoriaLogRepository;
+import com.gsw.taskmanager.repository.TarefaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,6 +25,9 @@ public class AuditoriaLogService {
 
     @Autowired
     private AuditoriaLogRepository auditoriaLogRepository;
+
+    @Autowired
+    private TarefaRepository tarefaRepository;
 
     @Transient
     private static final Set<String> ignoredFields = Set.of(
@@ -164,5 +170,21 @@ public class AuditoriaLogService {
         } else {
             throw new BusinessException("Usuário autenticado inválido");
         }
+    }
+
+    public List<AuditoriaResponseDto> listarPorTarefaId(String tarefaId) {
+        Tarefa tarefa = tarefaRepository.findById(tarefaId).filter(Tarefa::isAtivo).orElseThrow(() -> new BusinessException("Tarefa não encontrada."));
+        List<AuditoriaLog> logs = auditoriaLogRepository.findAllByTarefaId(tarefaId);
+
+        List<AuditoriaResponseDto> modificacoes = logs.stream()
+                .flatMap(log -> log.getModificacoes().stream()
+                        .map(mod -> new AuditoriaResponseDto(
+                                log.getResponsavel().nomeResponsavel(),
+                                mod,
+                                log.getCriadoEm()
+                        ))
+                ).toList();
+
+        return modificacoes;
     }
 }
