@@ -5,13 +5,10 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.gsw.taskmanager.enums.Status;
-import com.gsw.taskmanager.enums.TipoAnexo;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,8 +40,6 @@ public class Tarefa {
     private LocalDateTime dataCriacao; 
 
     private boolean ativo;
-
-    private List<AuditoriaLog> modificacoes = new ArrayList<>();
 
     // ANEXOS:
     private List<Anexo> anexos = new ArrayList<>();
