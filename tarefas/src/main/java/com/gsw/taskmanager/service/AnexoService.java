@@ -21,6 +21,7 @@ import com.gsw.taskmanager.exception.anexo.AcessoNegadoAnexoException;
 import com.gsw.taskmanager.exception.anexo.AnexoNaoEncontradoException;
 import com.gsw.taskmanager.exception.anexo.LimiteAnexosExcedidoException;
 import com.gsw.taskmanager.exception.anexo.TarefaNaoEncontradaException;
+import com.gsw.taskmanager.exception.anexo.UploadNaoPermitidoException;
 import com.gsw.taskmanager.exception.anexo.TipoAnexoInvalidoException;
 import com.gsw.taskmanager.repository.TarefaRepository;
 
@@ -37,36 +38,17 @@ public class AnexoService {
     private FileStorageService fileStorageService;
 
     // TODO REGISTRAR ADIÇÃO DE ANEXO NA TAREFA
-    public Anexo adicionarAnexoNaTarefa(String tarefaId, AnexoDto anexoDto) {
+    public Anexo adicionarAnexo(String tarefaId, String usuarioId, MultipartFile arquivo) {
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
-        validarLimiteAnexos(tarefa, anexoDto.getTamanho());
-
-        if (anexoDto.getUrl() != null && !anexoDto.getUrl().isEmpty()) {
-            validarTipoArquivo(anexoDto.getUrl(), anexoDto.getTipo());
+        if (tarefa.getStatus() == null) {
+            throw new UploadNaoPermitidoException(tarefaId, "null");
         }
-
-        Anexo novoAnexo = new Anexo();
-        novoAnexo.setId(new ObjectId().toString());
-        novoAnexo.setUsuarioId(anexoDto.getUsuarioId());
-        novoAnexo.setTarefaId(tarefaId);
-        novoAnexo.setDataUpload(LocalDateTime.now());
-        novoAnexo.setTipo(anexoDto.getTipo());
-        novoAnexo.setUrl(anexoDto.getUrl());
-        novoAnexo.setTamanho(anexoDto.getTamanho());
-        novoAnexo.setNome(anexoDto.getNome());
-
-        tarefa.getAnexos().add(novoAnexo);
-        tarefaRepository.save(tarefa);
-
-        return novoAnexo;
-    }
-
-    // TODO REGISTRAR ADIÇÃO DE ANEXO NA TAREFA
-    public Anexo adicionarAnexoComArquivo(String tarefaId, String usuarioId, MultipartFile arquivo) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
+        if (tarefa.getStatus().name().equalsIgnoreCase("NAO_INICIADA") ||
+            tarefa.getStatus().getStatus().equalsIgnoreCase("nao_iniciada")) {
+            throw new UploadNaoPermitidoException(tarefaId, tarefa.getStatus().getStatus());
+        }
 
         validarLimiteAnexos(tarefa, arquivo.getSize());
 
@@ -126,9 +108,6 @@ public class AnexoService {
         }
         if (anexoDto.getTipo() != null) {
             anexoEncontrado.setTipo(anexoDto.getTipo());
-        }
-        if (anexoDto.getUsuarioId() != null) {
-            anexoEncontrado.setUsuarioId(anexoDto.getUsuarioId());
         }
 
         tarefaRepository.save(tarefa);

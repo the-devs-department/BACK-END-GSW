@@ -2,9 +2,12 @@ package com.gsw.taskmanager.exception;
 
 import com.gsw.taskmanager.exception.anexo.AcessoNegadoAnexoException;
 import com.gsw.taskmanager.exception.anexo.AnexoNaoEncontradoException;
+import com.gsw.taskmanager.exception.anexo.ArquivoNaoEncontradoException;
+import com.gsw.taskmanager.exception.anexo.ErroArmazenamentoArquivoException;
 import com.gsw.taskmanager.exception.anexo.LimiteAnexosExcedidoException;
 import com.gsw.taskmanager.exception.anexo.TarefaNaoEncontradaException;
 import com.gsw.taskmanager.exception.anexo.TipoAnexoInvalidoException;
+import com.gsw.taskmanager.exception.anexo.UploadNaoPermitidoException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -103,6 +106,36 @@ public class GlobalExceptionHandler {
         body.put("error", "Invalid attachment type");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(UploadNaoPermitidoException.class)
+    public ResponseEntity<Map<String, Object>> handleUploadNaoPermitidoException(UploadNaoPermitidoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Upload not allowed");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(ArquivoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleArquivoNaoEncontradoException(ArquivoNaoEncontradoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "File not found");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(ErroArmazenamentoArquivoException.class)
+    public ResponseEntity<Map<String, Object>> handleErroArmazenamentoArquivoException(ErroArmazenamentoArquivoException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("error", "File storage error");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 
     @ExceptionHandler(ClassNotFoundException.class)
