@@ -5,6 +5,7 @@ import com.gsw.taskmanager.dto.AnexoDto;
 import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.taskmanager.enums.Status;
 import com.gsw.taskmanager.enums.TipoAnexo;
 import com.gsw.taskmanager.repository.TarefaRepository;
 import com.gsw.taskmanager.repository.UsuarioRepository;
@@ -116,6 +117,7 @@ class AnexoControllerTest {
         tarefa.setDataEntrega("2024-12-31");
         tarefa.setTema("Desenvolvimento");
         tarefa.setDataCriacao(LocalDateTime.now());
+        tarefa.setStatus(Status.EM_ANDAMENTO);
         tarefa.setAtivo(true);
         tarefa.setAnexos(new ArrayList<>());
         tarefa = tarefaRepository.save(tarefa);
@@ -145,10 +147,10 @@ class AnexoControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is("anexo1")))
                 .andExpect(jsonPath("$[0].nome", is("documento1.pdf")))
-                .andExpect(jsonPath("$[0].tipo", is("application/pdf")))
+                .andExpect(jsonPath("$[0].tipo", is(TipoAnexo.PDF.getMimeType())))
                 .andExpect(jsonPath("$[1].id", is("anexo2")))
                 .andExpect(jsonPath("$[1].nome", is("planilha.xlsx")))
-                .andExpect(jsonPath("$[1].tipo", is("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")));
+                .andExpect(jsonPath("$[1].tipo", is(TipoAnexo.XLSX.getMimeType())));
     }
 
     @Test
@@ -171,7 +173,7 @@ class AnexoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is("anexo123")))
                 .andExpect(jsonPath("$.nome", is("documento.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")))
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.PDF.getMimeType())))
                 .andExpect(jsonPath("$.usuarioId", is(usuarioId)))
                 .andExpect(jsonPath("$.tamanho", is(1048576)));
     }
@@ -203,7 +205,7 @@ class AnexoControllerTest {
                 .content(anexoDtoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("documento_atualizado.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/vnd.openxmlformats-officedocument.wordprocessingml.document")));
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.DOCX.getMimeType())));
     }
 
     @Test
@@ -259,7 +261,7 @@ class AnexoControllerTest {
         mockMvc.perform(get("/tarefas/{tarefaId}/anexos/{anexoId}", tarefaId, "anexo_leitura_teste"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("documento_leitura.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")));
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.PDF.getMimeType())));
 
 
         mockMvc.perform(get("/tarefas/{tarefaId}/anexos", tarefaId))
@@ -293,7 +295,7 @@ class AnexoControllerTest {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo",
                 "documento.pdf",
-                "application/pdf",
+                TipoAnexo.PDF.getMimeType(),
                 "conteudo do arquivo PDF".getBytes()
         );
 
@@ -302,7 +304,7 @@ class AnexoControllerTest {
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nome", is("documento.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")))
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.PDF.getMimeType())))
                 .andExpect(jsonPath("$.tarefaId", is(tarefaId)))
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.dataUpload", notNullValue()));
@@ -313,7 +315,7 @@ class AnexoControllerTest {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo",
                 "arquivo_vazio.pdf",
-                "application/pdf",
+                TipoAnexo.PDF.getMimeType(),
                 new byte[0]
         );
 
@@ -383,7 +385,7 @@ class AnexoControllerTest {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo",
                 "arquivo_grande.pdf",
-                "application/pdf",
+                TipoAnexo.PDF.getMimeType(),
                 arquivoGrande
         );
 
