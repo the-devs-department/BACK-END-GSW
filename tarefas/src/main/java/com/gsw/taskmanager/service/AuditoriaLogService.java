@@ -1,11 +1,13 @@
 package com.gsw.taskmanager.service;
 
 import com.gsw.taskmanager.dto.AuditoriaResponseDto;
+import com.gsw.taskmanager.dto.ModificacaoLogDto;
 import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
 import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.taskmanager.enums.CategoriaModificacao;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.AuditoriaLogRepository;
 import com.gsw.taskmanager.repository.TarefaRepository;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -47,20 +50,22 @@ public class AuditoriaLogService {
     // ------------------------- CRIAÇÃO -------------------------
 
     public AuditoriaLog registrarCriacao(Tarefa tarefaNova){
-        List<String> modificacoes = new ArrayList<>();
-        modificacoes.add("Tarefa criada com título '" + tarefaNova.getTitulo() + "'.");
+        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
+        String descricao = "Tarefa criada com título '" + tarefaNova.getTitulo() + "'.";
+        CategoriaModificacao categoria = CategoriaModificacao.CRIACAO;
+
+        modificacoes.add(new ModificacaoLogDto(categoria, descricao));
         return auditoriaLogRepository.save(criarLog(tarefaNova.getId(), modificacoes));
     }
 
     public void registrarAtualizacao(Tarefa tarefaAntiga, Tarefa tarefaNova) {
-        List<String> modificacoes = new ArrayList<>();
+        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         modificacoes.addAll(visualizadorDeMudancas(tarefaAntiga, tarefaNova));
 
         modificacoes.addAll(visualizadorDeAnexos(tarefaAntiga.getAnexos(), tarefaNova.getAnexos()));
 
         if (modificacoes.isEmpty()) {
-            modificacoes.add("Nenhuma alteração detectada.");
             return;
         }
 
@@ -70,22 +75,27 @@ public class AuditoriaLogService {
     // ------------------------- EXCLUSÃO -------------------------
 
     public void registrarExclusao(Tarefa tarefa){
-        List<String> modificacoes = new ArrayList<>();
-        modificacoes.add("Tarefa removida (soft delete)");
+        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
+        String descricao = "Tarefa removida (soft delete)";
+        CategoriaModificacao categoria = CategoriaModificacao.EXCLUSAO;
+        modificacoes.add(new ModificacaoLogDto(categoria, descricao));
 
         auditoriaLogRepository.save(criarLog(tarefa.getId(), modificacoes));
     }
 
     // ------------------------- ATRIBUIÇÃO -----------------------
     public void registrarAtribuicao(Tarefa tarefaAntiga, String usuarioAnterior, String usuarioNovo) {
-        List<String> modificacoes = new ArrayList<>();
-        modificacoes.add("Responsável alterado de '" + usuarioAnterior + "' para '" + usuarioNovo + "'.");
+        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
+        String descricao = "Responsável alterado de '" + usuarioAnterior + "' para '" + usuarioNovo + "'.";
+        CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
+
+        modificacoes.add(new ModificacaoLogDto(categoria, descricao));
         tarefaAntiga.setResponsavel(usuarioNovo);
         auditoriaLogRepository.save(criarLog(tarefaAntiga.getId(), modificacoes));
     }
 
-    private List<String> visualizadorDeMudancas(Tarefa tarefaAntiga, Tarefa tarefaNova) {
-        List<String> modificacoes = new ArrayList<>();
+    private List<ModificacaoLogDto> visualizadorDeMudancas(Tarefa tarefaAntiga, Tarefa tarefaNova) {
+        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         if (tarefaAntiga == null || tarefaNova == null) return modificacoes;
 
@@ -101,7 +111,9 @@ public class AuditoriaLogService {
 
                 if (!Objects.equals(valorAntigo, valorNovo)) {
                     String nomeCampo = fieldLabels.getOrDefault(field.getName(), field.getName());
-                    modificacoes.add(nomeCampo + " alterado de '" + valorAntigo + "' para '" + valorNovo + "'.");
+                    String descricao = nomeCampo + " alterado de '" + valorAntigo + "' para '" + valorNovo + "'.";
+                    CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
+                    modificacoes.add(new ModificacaoLogDto(categoria, descricao));
                 }
 
             } catch (IllegalAccessException e) {
@@ -111,8 +123,8 @@ public class AuditoriaLogService {
         return modificacoes;
     }
 
-    private List<String> visualizadorDeAnexos(List<Anexo> anexosAntigos, List<Anexo> anexosNovos) {
-        List<String> modificacoes = new ArrayList<>();
+    private List<ModificacaoLogDto> visualizadorDeAnexos(List<Anexo> anexosAntigos, List<Anexo> anexosNovos) {
+        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         Map<String, Anexo> antigosMap = new HashMap<>();
         for (Anexo anexo : anexosAntigos) antigosMap.put(anexo.getId(), anexo);
@@ -122,13 +134,17 @@ public class AuditoriaLogService {
 
         for (Anexo novo : anexosNovos) {
             if (!antigosMap.containsKey(novo.getId())) {
-                modificacoes.add("Anexo '" + novo.getNome() + "' adicionado.");
+                String descricao = "Anexo '" + novo.getNome() + "' adicionado.";
+                CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
+                modificacoes.add(new ModificacaoLogDto(categoria, descricao));
             }
         }
 
         for (Anexo antigo : anexosAntigos) {
             if (!novosMap.containsKey(antigo.getId())) {
-                modificacoes.add("Anexo '" + antigo.getNome() + "' removido.");
+                String descricao = "Anexo '" + antigo.getNome() + "' removido.";
+                CategoriaModificacao categoria = CategoriaModificacao.EXCLUSAO;
+                modificacoes.add(new ModificacaoLogDto(categoria, descricao));
             }
         }
 
@@ -136,26 +152,27 @@ public class AuditoriaLogService {
             Anexo antigo = antigosMap.get(novo.getId());
             if (antigo != null) {
                 if (!Objects.equals(antigo.getNome(), novo.getNome())) {
-                    modificacoes.add("Anexo '" + antigo.getNome() + "' alterado: nome de '" + antigo.getNome() + "' para '" + novo.getNome() + "'.");
+                    String descricao = "Anexo '" + antigo.getNome() + "' alterado: nome de '" + antigo.getNome() + "' para '" + novo.getNome() + "'.";
+                    CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
+                    modificacoes.add(new ModificacaoLogDto(categoria, descricao));
                 }
                 if (!Objects.equals(antigo.getTipo(), novo.getTipo())) {
-                    modificacoes.add("Anexo '" + antigo.getNome() + "' alterado: tipo de '" + antigo.getTipo() + "' para '" + novo.getTipo() + "'.");
-                }
-                if (!Objects.equals(antigo.getUrl(), novo.getUrl())) {
-                    modificacoes.add("Anexo '" + antigo.getNome() + "' alterado: URL de '" + antigo.getUrl() + "' para '" + novo.getUrl() + "'.");
+                    String descricao = "Anexo '" + antigo.getNome() + "' alterado: tipo de '" + antigo.getTipo() + "' para '" + novo.getTipo() + "'.";
+                    CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
+                    modificacoes.add(new ModificacaoLogDto(categoria, descricao));
                 }
             }
         }
         return modificacoes;
     }
 
-    private AuditoriaLog criarLog(String tarefaId, List<String> modificacoes) {
+    private AuditoriaLog criarLog(String tarefaId, List<ModificacaoLogDto> modificacoes) {
         Usuario usuario = obterUsuarioAutenticado();
 
         AuditoriaLog log = new AuditoriaLog();
 
         log.setTarefaId(tarefaId);
-        log.setResponsavel(new ResponsavelAlteracaoDto(usuario.getId(), usuario.getNome()));
+        log.setResponsavel(new ResponsavelAlteracaoDto(usuario.getId(), usuario.getEmail()));
         log.setCriadoEm(LocalDateTime.now());
         log.setModificacoes(modificacoes);
 
@@ -176,15 +193,21 @@ public class AuditoriaLogService {
         Tarefa tarefa = tarefaRepository.findById(tarefaId).filter(Tarefa::isAtivo).orElseThrow(() -> new BusinessException("Tarefa não encontrada."));
         List<AuditoriaLog> logs = auditoriaLogRepository.findAllByTarefaId(tarefaId);
 
+        // Formatadores BRL
+        DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
+
         List<AuditoriaResponseDto> modificacoes = logs.stream()
                 .flatMap(log -> log.getModificacoes().stream()
-                        .map(mod -> new AuditoriaResponseDto(
-                                log.getResponsavel().nomeResponsavel(),
-                                mod,
-                                log.getCriadoEm()
+                        .map(modificacao -> new AuditoriaResponseDto(
+                                log.getResponsavel(),
+                                modificacao,
+                                LocalDateTime.now().format(formatoData),
+                                LocalDateTime.now().format(formatoHora)
                         ))
                 ).toList();
 
         return modificacoes;
     }
+
 }

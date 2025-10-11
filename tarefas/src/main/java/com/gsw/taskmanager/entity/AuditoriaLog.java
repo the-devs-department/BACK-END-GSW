@@ -1,6 +1,7 @@
 package com.gsw.taskmanager.entity;
 
 
+import com.gsw.taskmanager.dto.ModificacaoLogDto;
 import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,5 +22,5 @@ public class AuditoriaLog {
 
     private ResponsavelAlteracaoDto responsavel;
 
-    private List<String> modificacoes;
+    private List<ModificacaoLogDto> modificacoes;
 }

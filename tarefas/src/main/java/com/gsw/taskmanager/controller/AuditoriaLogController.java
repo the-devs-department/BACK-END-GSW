@@ -1,7 +1,6 @@
 package com.gsw.taskmanager.controller;
 
 import com.gsw.taskmanager.dto.AuditoriaResponseDto;
-import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.service.AuditoriaLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
