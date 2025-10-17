@@ -23,4 +23,9 @@ public class AuditoriaLogController {
         return ResponseEntity.ok(auditoriaLogService.listarPorTarefaId(tarefaId));
     }
 
+    @GetMapping
+    public ResponseEntity<List<AuditoriaResponseDto>> listarTodos() {
+        return ResponseEntity.ok(auditoriaLogService.listarTodos());
+    }
+
 }
