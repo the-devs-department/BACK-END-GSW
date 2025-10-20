@@ -1,9 +1,6 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
-import com.gsw.taskmanager.dto.LoginRequest;
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.UsuarioResponseDto;
+import com.gsw.taskmanager.dto.*;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.UsuarioRepository;
@@ -111,7 +108,7 @@ public class UsuarioService {
         }
     }
 
-    public String autenticar(LoginRequest request) {
+    public TokenResponse autenticar(LoginRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado."));
         if (!usuario.isAtivo()) {
@@ -121,6 +118,7 @@ public class UsuarioService {
         if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
             throw new BadCredentialsException("Usuário ou senha inválidos");
         }
-        return jwtService.generateToken(usuario);
+        String token = jwtService.generateToken(usuario);
+        return new TokenResponse(token, usuario.getId());
     }
 }
