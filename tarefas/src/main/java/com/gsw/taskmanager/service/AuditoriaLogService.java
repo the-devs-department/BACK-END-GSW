@@ -200,14 +200,41 @@ public class AuditoriaLogService {
         List<AuditoriaResponseDto> modificacoes = logs.stream()
                 .flatMap(log -> log.getModificacoes().stream()
                         .map(modificacao -> new AuditoriaResponseDto(
+                                tarefa,
                                 log.getResponsavel(),
                                 modificacao,
-                                LocalDateTime.now().format(formatoData),
-                                LocalDateTime.now().format(formatoHora)
+                                log.getCriadoEm().format(formatoData),
+                                log.getCriadoEm().format(formatoHora)
                         ))
                 ).toList();
 
         return modificacoes;
     }
 
+    public List<AuditoriaResponseDto> listarTodos() {
+        List<AuditoriaLog> logs = auditoriaLogRepository.findAll();
+        List<Tarefa> tarefas = tarefaRepository.findAll();
+
+        DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
+
+        return logs.stream()
+                .flatMap(log -> log.getModificacoes().stream()
+                        .map(modificacao -> {
+                            Tarefa tarefa = tarefas.stream()
+                                    .filter(t -> t.getId().equals(log.getTarefaId()))
+                                    .findFirst()
+                                    .orElse(null);
+
+                            return new AuditoriaResponseDto(
+                                    tarefa,
+                                    log.getResponsavel(),
+                                    modificacao,
+                                    log.getCriadoEm().format(formatoData),
+                                    log.getCriadoEm().format(formatoHora)
+                            );
+                        })
+                )
+                .toList();
+    }
 }
