@@ -1,19 +1,23 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.*;
-import com.gsw.taskmanager.entity.Usuario;
-import com.gsw.taskmanager.exception.BusinessException;
-import com.gsw.taskmanager.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.LoginResponseDto;
+import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
+import com.gsw.taskmanager.dto.UsuarioResponseDto;
+import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.taskmanager.exception.BusinessException;
+import com.gsw.taskmanager.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
@@ -47,6 +51,16 @@ public class UsuarioService {
                 usuario.getDataCadastro(),
                 usuario.isAtivo(),
                 usuario.getTarefas()
+        )).orElseThrow();
+    }
+
+    public LoginResponseDto buscarUsuarioAoLogar(String uuid) {
+        Optional<Usuario> usuarioBuscado = usuarioRepository.findById(uuid);
+
+        return usuarioBuscado.map(usuario -> new LoginResponseDto(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getRoles()
         )).orElseThrow();
     }
 
