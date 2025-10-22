@@ -36,6 +36,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/usuarios/criar").permitAll()
                     .requestMatchers("/auth/login").permitAll()
+                    .requestMatchers("/auth/recuperar-senha").permitAll()
+                    .requestMatchers("/auth/resetar-senha/**").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -24,9 +24,6 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
-
     public List<UsuarioResponseDto> listarTodos() {
         return usuarioRepository.findAll()
                 .stream()
@@ -53,10 +50,10 @@ public class UsuarioService {
         )).orElseThrow();
     }
 
-    public UsuarioResponseDto criarUsuario(CriacaoUsuarioDto user){
+    public UsuarioResponseDto criarUsuario(CriacaoUsuarioDto user) {
         Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.email());
 
-        if (usuarioEncontrado.isPresent()){
+        if (usuarioEncontrado.isPresent()) {
             throw new DataIntegrityViolationException("Usuário já existe");
         }
         Usuario usuario = new Usuario();
@@ -76,7 +73,7 @@ public class UsuarioService {
                 usuario.getDataCadastro(),
                 usuario.isAtivo(),
                 usuario.getTarefas()
-            );
+        );
     }
 
     public UsuarioResponseDto atualizarUsuario(UsuarioAlteracaoDto usuario) {
@@ -108,17 +105,9 @@ public class UsuarioService {
         }
     }
 
-    public TokenResponse autenticar(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado."));
-        if (!usuario.isAtivo()) {
-            throw new IllegalStateException("Usuário inativo");
-        }
-
-        if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
-            throw new BadCredentialsException("Usuário ou senha inválidos");
-        }
-        String token = jwtService.generateToken(usuario);
-        return new TokenResponse(token, usuario.getId());
+    public void atualizarSenha(String email, String novaSenha) {
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
     }
 }
