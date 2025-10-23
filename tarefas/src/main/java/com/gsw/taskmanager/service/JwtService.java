@@ -1,5 +1,7 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.LoginRequest;
+import com.gsw.taskmanager.dto.TokenResponse;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.UsuarioRepository;
@@ -9,8 +11,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.time.Instant;
@@ -34,6 +40,9 @@ public class JwtService {
     @Value("${app.jwt.expiration}")
     private long expiration;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public JwtService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
@@ -47,7 +56,7 @@ public class JwtService {
         Instant now = Instant.now();
         String jwt = Jwts.builder()
                 .setId(UUID.randomUUID().toString())
-                .setSubject(usuario.getEmail())
+                .setSubject(usuario.getUsername())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(expiration)))
                 .claim("id", usuario.getId())
@@ -131,5 +140,19 @@ public class JwtService {
         } catch (Exception e) {
             throw new RuntimeException("Error decrypting token", e);
         }
+    }
+
+    public TokenResponse autenticar(LoginRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado."));
+        if (!usuario.isAtivo()) {
+            throw new IllegalStateException("Usuário inativo");
+        }
+
+        if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
+            throw new BadCredentialsException("Usuário ou senha inválidos");
+        }
+        String token = generateToken(usuario);
+        return new TokenResponse(token, usuario.getId());
     }
 }
