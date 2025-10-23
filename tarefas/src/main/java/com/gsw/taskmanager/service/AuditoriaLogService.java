@@ -1,8 +1,8 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.AuditoriaResponseDto;
-import com.gsw.taskmanager.dto.ModificacaoLogDto;
-import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
+import com.gsw.taskmanager.dto.logs.AuditoriaResponseDto;
+import com.gsw.taskmanager.dto.logs.ModificacaoLogDto;
+import com.gsw.taskmanager.dto.logs.ResponsavelAlteracaoDto;
 import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -90,7 +89,6 @@ public class AuditoriaLogService {
         CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
 
         modificacoes.add(new ModificacaoLogDto(categoria, descricao));
-        tarefaAntiga.setResponsavel(usuarioNovo);
         auditoriaLogRepository.save(criarLog(tarefaAntiga.getId(), modificacoes));
     }
 

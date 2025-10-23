@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.dto;
+package com.gsw.taskmanager.dto.usuario;
 
 import com.gsw.taskmanager.entity.Tarefa;
 

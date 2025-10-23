@@ -1,15 +1,14 @@
 package com.gsw.taskmanager.controller;
 
-import com.gsw.taskmanager.dto.LoginRequest;
-import com.gsw.taskmanager.dto.PasswordRequestEmailDto;
-import com.gsw.taskmanager.dto.PasswordResetRequest;
-import com.gsw.taskmanager.dto.TokenResponse;
+import com.gsw.taskmanager.dto.auth.LoginRequest;
+import com.gsw.taskmanager.dto.auth.PasswordRequestEmailDto;
+import com.gsw.taskmanager.dto.auth.PasswordResetRequest;
+import com.gsw.taskmanager.dto.auth.TokenResponse;
 import com.gsw.taskmanager.service.PasswordResetService;
 import com.gsw.taskmanager.service.JwtService;
 import com.gsw.taskmanager.service.TokenService;
 import com.gsw.taskmanager.service.UsuarioService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

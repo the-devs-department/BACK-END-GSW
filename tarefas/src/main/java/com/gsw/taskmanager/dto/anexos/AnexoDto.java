@@ -1,8 +1,7 @@
-package com.gsw.taskmanager.dto;
+package com.gsw.taskmanager.dto.anexos;
 
 import com.gsw.taskmanager.enums.TipoAnexo;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;

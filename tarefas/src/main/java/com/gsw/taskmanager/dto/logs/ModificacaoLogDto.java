@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.dto;
+package com.gsw.taskmanager.dto.logs;
 
 import com.gsw.taskmanager.enums.CategoriaModificacao;
 

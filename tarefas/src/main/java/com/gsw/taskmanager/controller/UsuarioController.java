@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
-import com.gsw.taskmanager.dto.LoginResponseDto;
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.UsuarioResponseDto;
+import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.auth.LoginResponseDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
 import com.gsw.taskmanager.service.UsuarioService;
 
 import jakarta.validation.Valid;

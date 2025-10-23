@@ -1,8 +1,8 @@
 package com.gsw.taskmanager.entity;
 
 
-import com.gsw.taskmanager.dto.ModificacaoLogDto;
-import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
+import com.gsw.taskmanager.dto.logs.ModificacaoLogDto;
+import com.gsw.taskmanager.dto.logs.ResponsavelAlteracaoDto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;

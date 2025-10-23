@@ -1,5 +1,5 @@
 
-package com.gsw.taskmanager.dto;
+package com.gsw.taskmanager.dto.auth;
 
 import java.util.List;
 

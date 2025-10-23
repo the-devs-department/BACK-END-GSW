@@ -1,7 +1,7 @@
 package com.gsw.taskmanager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.repository.UsuarioRepository;

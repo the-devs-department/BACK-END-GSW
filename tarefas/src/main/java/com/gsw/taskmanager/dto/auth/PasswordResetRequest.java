@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.dto;
+package com.gsw.taskmanager.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

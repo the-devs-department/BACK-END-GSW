@@ -11,10 +11,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
-import com.gsw.taskmanager.dto.LoginResponseDto;
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.UsuarioResponseDto;
+import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.auth.LoginResponseDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.UsuarioRepository;

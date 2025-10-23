@@ -1,18 +1,13 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.ResponsavelAlteracaoDto;
 import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
-import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.TarefaRepository;
 import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
