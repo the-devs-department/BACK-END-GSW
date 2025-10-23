@@ -31,9 +31,6 @@ public class PasswordResetService {
     private UsuarioService usuarioService;
 
     @Autowired
-    private UsuarioRepository userRepository;
-
-    @Autowired
     private EmailService emailService;
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -53,7 +50,15 @@ public class PasswordResetService {
         // Build URL
         String resetUrl = baseUrl + "/auth/resetar-senha/" + token;
 
-        emailService.sendResetPasswordEmail(email, email, resetUrl);
+        String text = String.format("""
+            <p>Olá %s,</p>
+            <p>Clique no link abaixo para resetar sua senha:</p>
+            <a href="%s">Resetar Senha</a>
+            <p>Se você não solicitou, por favor desconsiderar esse e-mail.</p>
+            """, email, resetUrl);
+        String subject = "Redefinição de senha";
+        emailService.sendEmailViaGmail(email, subject, text);
+
         System.out.println("Password reset url: " + resetUrl);
 
         return resetUrl;
