@@ -37,7 +37,7 @@ public class SecurityConfig {
                     .requestMatchers("/usuarios/criar").permitAll()
                     .requestMatchers("/auth/login").permitAll()
                     .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/api/notifications/**").authenticated()
+                    .requestMatchers("/notifications/**").authenticated()
                     .requestMatchers("/auth/recuperar-senha").permitAll()
                     .requestMatchers("/auth/resetar-senha/**").permitAll()
                     .anyRequest().authenticated()

@@ -1,5 +1,6 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.exception.BusinessException;
@@ -60,16 +61,17 @@ public class TarefaService {
             AuditoriaLog log = logService.registrarCriacao(tarefaSalva);
             System.out.println(log.getModificacoes());
             
-           
+            
             tarefaRepository.save(tarefaSalva); 
 
             // LÓGICA DE NOTIFICAÇÃO (CRIAÇÃO) 
-            if (tarefaSalva.getResponsavel() != null && !tarefaSalva.getResponsavel().isEmpty()) {
-                String userId = tarefaSalva.getResponsavel();
+            if (tarefaSalva.getResponsavel() != null) {
+                UsuarioResponsavelTarefaDto responsavelDto = tarefaSalva.getResponsavel();
+                String userIdParaNotificar = responsavelDto.id();
                 String message = "Nova tarefa atribuída a você: " + tarefaSalva.getTitulo();
-                String link = "/tasks/" + tarefaSalva.getId(); // Link do front-end
+                String link = "/tarefas/" + tarefaSalva.getId(); 
                 
-                notificationService.sendNotification(userId, message, link);
+                notificationService.sendNotification(userIdParaNotificar, message, link);
             }
 
             return tarefaSalva;
@@ -84,7 +86,9 @@ public class TarefaService {
         Tarefa tarefaBanco = tarefaRepository.findById(id).orElseThrow();
         Tarefa tarefaAntiga = SerializationUtils.clone(tarefaBanco);
 
-        String oldResponsavel = tarefaAntiga.getResponsavel();
+        String oldResponsavelId = (tarefaAntiga.getResponsavel() != null)
+                                  ? tarefaAntiga.getResponsavel().id()
+                                  : null;
 
         if (tarefaAtualizada.getTitulo() != null) {
             tarefaBanco.setTitulo(tarefaAtualizada.getTitulo());
@@ -105,7 +109,9 @@ public class TarefaService {
             tarefaBanco.setStatus(tarefaAtualizada.getStatus());
         }
 
-        String newResponsavel = tarefaBanco.getResponsavel();
+        String newResponsavelId = (tarefaBanco.getResponsavel() != null)
+                                  ? tarefaBanco.getResponsavel().id()
+                                  : null;
 
        try {
             Tarefa tarefaSalva = tarefaRepository.save(tarefaBanco);
@@ -113,24 +119,22 @@ public class TarefaService {
 
             // LÓGICA DE NOTIFICAÇÃO (ATRIBUIÇÃO/EDIÇÃO) 
             
-            //  Notifica se o responsável MUDOU 
-            if (newResponsavel != null && !newResponsavel.equals(oldResponsavel)) {
+            if (newResponsavelId != null && !newResponsavelId.equals(oldResponsavelId)) {
                 notificationService.sendNotification(
-                    newResponsavel,
+                    newResponsavelId, 
                     "Você foi atribuído(a) à tarefa: " + tarefaSalva.getTitulo(),
-                    "/tasks/" + tarefaSalva.getId()
+                    "/tarefas/" + tarefaSalva.getId() 
                 );
             }
             
-            // Notifica o responsável sobre outras mudanças (ex: prazo)
             if (tarefaAtualizada.getDataEntrega() != null && 
                 !tarefaAtualizada.getDataEntrega().equals(tarefaAntiga.getDataEntrega()) &&
-                newResponsavel != null) 
+                newResponsavelId != null)
             {
                 notificationService.sendNotification(
-                    newResponsavel,
+                    newResponsavelId, 
                     "O prazo da tarefa '" + tarefaSalva.getTitulo() + "' foi alterado.",
-                    "/tasks/" + tarefaSalva.getId()
+                    "/tarefas/" + tarefaSalva.getId() 
                 );
             }
 
@@ -150,11 +154,12 @@ public class TarefaService {
             auditoriaLogService.registrarExclusao(tarefa);
 
             // LÓGICA DE NOTIFICAÇÃO (EXCLUSÃO) 
-            if (tarefa.getResponsavel() != null && !tarefa.getResponsavel().isEmpty()) {
+            if (tarefa.getResponsavel() != null) {
+                String responsavelId = tarefa.getResponsavel().id();
                 notificationService.sendNotification(
-                    tarefa.getResponsavel(),
+                    responsavelId,
                     "A tarefa '" + tarefa.getTitulo() + "' foi excluída.",
-                    "/tasks/" + tarefa.getId()
+                    "/tarefas/" + tarefa.getId() 
                 );
             }
 

@@ -1,0 +1,39 @@
+package com.gsw.taskmanager.service;
+
+import com.gsw.taskmanager.entity.Notification;
+import com.gsw.taskmanager.repository.NotificationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class NotificationService {
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate; 
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    /**
+     * ...
+     * @param userId 
+     * ...
+     */
+    public void sendNotification(String userId, String message, String link) { 
+        try {
+            
+            Notification notification = new Notification(userId, message, link);
+            Notification savedNotification = notificationRepository.save(notification);
+
+            messagingTemplate.convertAndSendToUser(
+                userId, 
+                "/notifications", 
+                savedNotification 
+            );
+
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar notificação: " + e.getMessage());
+        }
+    }
+}
