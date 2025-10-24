@@ -23,6 +23,9 @@ public class TarefaService {
     @Autowired
     private AuditoriaLogService auditoriaLogService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     // LISTAR TODAS (apenas ativas)
     public List<Tarefa> listarTodas() {
         return tarefaRepository.findAll()
@@ -48,7 +51,7 @@ public class TarefaService {
     }
 
     // CRIAR
-    public Tarefa criar(Tarefa tarefa) {
+   public Tarefa criar(Tarefa tarefa) {
         tarefa.setAtivo(true);
         tarefa.setDataCriacao(LocalDateTime.now());
 
@@ -56,8 +59,18 @@ public class TarefaService {
             Tarefa tarefaSalva = tarefaRepository.save(tarefa);
             AuditoriaLog log = logService.registrarCriacao(tarefaSalva);
             System.out.println(log.getModificacoes());
+            
+           
+            tarefaRepository.save(tarefaSalva); 
 
-            tarefaRepository.save(tarefaSalva);
+            // LÓGICA DE NOTIFICAÇÃO (CRIAÇÃO) 
+            if (tarefaSalva.getResponsavel() != null && !tarefaSalva.getResponsavel().isEmpty()) {
+                String userId = tarefaSalva.getResponsavel();
+                String message = "Nova tarefa atribuída a você: " + tarefaSalva.getTitulo();
+                String link = "/tasks/" + tarefaSalva.getId(); // Link do front-end
+                
+                notificationService.sendNotification(userId, message, link);
+            }
 
             return tarefaSalva;
 
@@ -70,6 +83,8 @@ public class TarefaService {
     public Tarefa atualizar(String id, Tarefa tarefaAtualizada) {
         Tarefa tarefaBanco = tarefaRepository.findById(id).orElseThrow();
         Tarefa tarefaAntiga = SerializationUtils.clone(tarefaBanco);
+
+        String oldResponsavel = tarefaAntiga.getResponsavel();
 
         if (tarefaAtualizada.getTitulo() != null) {
             tarefaBanco.setTitulo(tarefaAtualizada.getTitulo());
@@ -90,10 +105,37 @@ public class TarefaService {
             tarefaBanco.setStatus(tarefaAtualizada.getStatus());
         }
 
-        try {
+        String newResponsavel = tarefaBanco.getResponsavel();
+
+       try {
             Tarefa tarefaSalva = tarefaRepository.save(tarefaBanco);
             auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaBanco);
+
+            // LÓGICA DE NOTIFICAÇÃO (ATRIBUIÇÃO/EDIÇÃO) 
+            
+            //  Notifica se o responsável MUDOU 
+            if (newResponsavel != null && !newResponsavel.equals(oldResponsavel)) {
+                notificationService.sendNotification(
+                    newResponsavel,
+                    "Você foi atribuído(a) à tarefa: " + tarefaSalva.getTitulo(),
+                    "/tasks/" + tarefaSalva.getId()
+                );
+            }
+            
+            // Notifica o responsável sobre outras mudanças (ex: prazo)
+            if (tarefaAtualizada.getDataEntrega() != null && 
+                !tarefaAtualizada.getDataEntrega().equals(tarefaAntiga.getDataEntrega()) &&
+                newResponsavel != null) 
+            {
+                notificationService.sendNotification(
+                    newResponsavel,
+                    "O prazo da tarefa '" + tarefaSalva.getTitulo() + "' foi alterado.",
+                    "/tasks/" + tarefaSalva.getId()
+                );
+            }
+
             return tarefaSalva;
+
         } catch (Exception e) {
             throw new BusinessException("Erro ao atualizar tarefa");
         }
@@ -106,6 +148,16 @@ public class TarefaService {
             tarefa.setAtivo(false);
             tarefaRepository.save(tarefa);
             auditoriaLogService.registrarExclusao(tarefa);
+
+            // LÓGICA DE NOTIFICAÇÃO (EXCLUSÃO) 
+            if (tarefa.getResponsavel() != null && !tarefa.getResponsavel().isEmpty()) {
+                notificationService.sendNotification(
+                    tarefa.getResponsavel(),
+                    "A tarefa '" + tarefa.getTitulo() + "' foi excluída.",
+                    "/tasks/" + tarefa.getId()
+                );
+            }
+
         } else {
             throw new BusinessException("Tarefa já está deletada.");
         }
