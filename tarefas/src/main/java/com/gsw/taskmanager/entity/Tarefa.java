@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import com.gsw.taskmanager.enums.Status;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -32,7 +33,7 @@ public class Tarefa implements Serializable {
     @NotNull
     private String descricao;
 
-    private String responsavel;
+    private UsuarioResponsavelTarefaDto responsavel;
 
     @NotNull
     private String dataEntrega;

@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gsw.taskmanager.dto.AnexoDto;
+import com.gsw.taskmanager.dto.anexos.AnexoDto;
 import com.gsw.taskmanager.exception.anexo.AcessoNegadoAnexoException;
 import com.gsw.taskmanager.exception.anexo.AnexoNaoEncontradoException;
 import com.gsw.taskmanager.exception.anexo.LimiteAnexosExcedidoException;

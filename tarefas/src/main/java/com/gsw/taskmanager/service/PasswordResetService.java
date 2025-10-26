@@ -1,16 +1,12 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.LoginRequest;
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
 import com.gsw.taskmanager.repository.UsuarioRepository;
 import com.gsw.taskmanager.service.utils.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 

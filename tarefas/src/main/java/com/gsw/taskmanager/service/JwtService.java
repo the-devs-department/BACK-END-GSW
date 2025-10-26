@@ -1,7 +1,7 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.LoginRequest;
-import com.gsw.taskmanager.dto.TokenResponse;
+import com.gsw.taskmanager.dto.auth.LoginRequest;
+import com.gsw.taskmanager.dto.auth.TokenResponse;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.UsuarioRepository;

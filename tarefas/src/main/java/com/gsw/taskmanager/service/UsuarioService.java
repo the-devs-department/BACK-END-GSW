@@ -5,16 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.gsw.taskmanager.dto.CriacaoUsuarioDto;
-import com.gsw.taskmanager.dto.LoginResponseDto;
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.UsuarioResponseDto;
+import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.auth.LoginResponseDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
 import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.UsuarioRepository;
@@ -61,6 +62,17 @@ public class UsuarioService {
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getRoles()
+        )).orElseThrow();
+    }
+
+    public UsuarioResponsavelTarefaDto buscarUsuarioResponsavelTarefa(String email) {
+        Optional<Usuario> usuarioBuscado = usuarioRepository.findByEmail(email);
+
+        return  usuarioBuscado.map(usuario -> new UsuarioResponsavelTarefaDto(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail()
+
         )).orElseThrow();
     }
 

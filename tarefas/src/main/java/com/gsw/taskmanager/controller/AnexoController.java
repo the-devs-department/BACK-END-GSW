@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.gsw.taskmanager.dto.AnexoDto;
+import com.gsw.taskmanager.dto.anexos.AnexoDto;
 import com.gsw.taskmanager.service.AnexoService;
 import com.gsw.taskmanager.service.FileService;
 

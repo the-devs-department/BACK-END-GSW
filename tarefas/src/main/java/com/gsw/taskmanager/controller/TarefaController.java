@@ -2,6 +2,7 @@ package com.gsw.taskmanager.controller;
 
 import java.util.List;
 
+import com.gsw.taskmanager.service.AtribuicaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.gsw.taskmanager.dto.AtribuicaoRequest;
+import com.gsw.taskmanager.dto.usuario.AtribuicaoRequestDto;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.service.TarefaService;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,11 +29,10 @@ public class TarefaController {
     private AtribuicaoService atribuicaoService;
 
     @PostMapping("/{tarefaId}/atribuir")
-    public ResponseEntity<Void> atribuirTarefa(@PathVariable String tarefaId, @RequestBody AtribuicaoRequest request) {
+    public ResponseEntity<Void> atribuirTarefa(@PathVariable String tarefaId, @RequestBody AtribuicaoRequestDto request) {
         atribuicaoService.atribuirUsuarioATarefa(tarefaId, request.usuarioId());
         return ResponseEntity.ok().build();
     }
-
 
     // Criar tarefa
     @PostMapping("/criar")

@@ -1,7 +1,8 @@
 package com.gsw.taskmanager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gsw.taskmanager.dto.AnexoDto;
+import com.gsw.taskmanager.dto.anexos.AnexoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
@@ -113,7 +114,7 @@ class AnexoControllerTest {
         tarefa = new Tarefa();
         tarefa.setTitulo("Tarefa de Teste");
         tarefa.setDescricao("Descrição da tarefa para testar anexos");
-        tarefa.setResponsavel(usuarioId);
+        tarefa.getResponsavel().id();
         tarefa.setDataEntrega("2024-12-31");
         tarefa.setTema("Desenvolvimento");
         tarefa.setDataCriacao(LocalDateTime.now());
@@ -223,7 +224,7 @@ class AnexoControllerTest {
 
         Anexo anexo = criarAnexoExemplo("anexo123", tarefaId , "usuarioProprietarioDoAnexo", "documento.pdf", TipoAnexo.PDF, "/uploads/documento.pdf", null, null);
 
-        tarefa.setResponsavel("outroResponsavel"); // Tarefa não pertence ao usuário autenticado
+        tarefa.setResponsavel(new UsuarioResponsavelTarefaDto("id","Nome","Email")); // Tarefa não pertence ao usuário autenticado
         tarefa.getAnexos().add(anexo);
         tarefaRepository.save(tarefa);
 
