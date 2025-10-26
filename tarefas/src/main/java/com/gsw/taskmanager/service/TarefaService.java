@@ -33,7 +33,7 @@ public class TarefaService {
 
     // Listar tarefas por membro da equipe (responsável)
     public List<Tarefa> listarPorResponsavel(String usuarioId) {
-        return tarefaRepository.findByResponsavel(usuarioId)
+        return tarefaRepository.findByResponsavelId(usuarioId)
                 .stream()
                 .filter(Tarefa::isAtivo)
                 .toList();

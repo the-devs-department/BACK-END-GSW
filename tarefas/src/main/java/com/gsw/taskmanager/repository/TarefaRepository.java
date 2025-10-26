@@ -8,6 +8,6 @@ import org.springframework.data.mongodb.repository.Query;
 @Repository
 public interface TarefaRepository extends MongoRepository<Tarefa, String> {
     // Busca tarefas pelo id do usuário responsável
-    @Query("{ 'responsavel': ?0 }")
-    List<Tarefa> findByResponsavel(String responsavelId);
+    @Query("{ 'responsavel._id': ?0 }")
+    List<Tarefa> findByResponsavelId(String responsavelId);
 }

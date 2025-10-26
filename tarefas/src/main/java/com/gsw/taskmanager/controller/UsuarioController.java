@@ -2,6 +2,7 @@ package com.gsw.taskmanager.controller;
 
 import java.util.List;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,6 +46,12 @@ public class UsuarioController {
     @GetMapping("/getOnLogin/{id}")
     public ResponseEntity<LoginResponseDto> buscarUsuarioAoLogar(@PathVariable String id){
         LoginResponseDto usuario = usuarioService.buscarUsuarioAoLogar(id);
+        return ResponseEntity.ok(usuario);
+    }
+
+    @GetMapping("/assignedUser/{email}")
+    public ResponseEntity<UsuarioResponsavelTarefaDto> buscarUsuarioResponsavelTarefa(@PathVariable String email) {
+        UsuarioResponsavelTarefaDto usuario = usuarioService.buscarUsuarioResponsavelTarefa(email);
         return ResponseEntity.ok(usuario);
     }
 

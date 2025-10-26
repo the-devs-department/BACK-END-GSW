@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -61,6 +62,17 @@ public class UsuarioService {
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getRoles()
+        )).orElseThrow();
+    }
+
+    public UsuarioResponsavelTarefaDto buscarUsuarioResponsavelTarefa(String email) {
+        Optional<Usuario> usuarioBuscado = usuarioRepository.findByEmail(email);
+
+        return  usuarioBuscado.map(usuario -> new UsuarioResponsavelTarefaDto(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail()
+
         )).orElseThrow();
     }
 
