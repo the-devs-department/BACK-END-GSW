@@ -1,5 +1,6 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.exception.BusinessException;
@@ -22,6 +23,9 @@ public class TarefaService {
     private AuditoriaLogService logService;
     @Autowired
     private AuditoriaLogService auditoriaLogService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // LISTAR TODAS (apenas ativas)
     public List<Tarefa> listarTodas() {
@@ -48,7 +52,7 @@ public class TarefaService {
     }
 
     // CRIAR
-    public Tarefa criar(Tarefa tarefa) {
+   public Tarefa criar(Tarefa tarefa) {
         tarefa.setAtivo(true);
         tarefa.setDataCriacao(LocalDateTime.now());
 
@@ -56,8 +60,19 @@ public class TarefaService {
             Tarefa tarefaSalva = tarefaRepository.save(tarefa);
             AuditoriaLog log = logService.registrarCriacao(tarefaSalva);
             System.out.println(log.getModificacoes());
+            
+            
+            tarefaRepository.save(tarefaSalva); 
 
-            tarefaRepository.save(tarefaSalva);
+            // LÓGICA DE NOTIFICAÇÃO (CRIAÇÃO) 
+            if (tarefaSalva.getResponsavel() != null) {
+                UsuarioResponsavelTarefaDto responsavelDto = tarefaSalva.getResponsavel();
+                String userIdParaNotificar = responsavelDto.id();
+                String message = "Nova tarefa atribuída a você: " + tarefaSalva.getTitulo();
+                String link = "/tarefas/" + tarefaSalva.getId(); 
+                
+                notificationService.sendNotification(userIdParaNotificar, message, link);
+            }
 
             return tarefaSalva;
 
@@ -70,6 +85,10 @@ public class TarefaService {
     public Tarefa atualizar(String id, Tarefa tarefaAtualizada) {
         Tarefa tarefaBanco = tarefaRepository.findById(id).orElseThrow();
         Tarefa tarefaAntiga = SerializationUtils.clone(tarefaBanco);
+
+        String oldResponsavelId = (tarefaAntiga.getResponsavel() != null)
+                                  ? tarefaAntiga.getResponsavel().id()
+                                  : null;
 
         if (tarefaAtualizada.getTitulo() != null) {
             tarefaBanco.setTitulo(tarefaAtualizada.getTitulo());
@@ -90,10 +109,37 @@ public class TarefaService {
             tarefaBanco.setStatus(tarefaAtualizada.getStatus());
         }
 
-        try {
+        String newResponsavelId = (tarefaBanco.getResponsavel() != null)
+                                  ? tarefaBanco.getResponsavel().id()
+                                  : null;
+
+       try {
             Tarefa tarefaSalva = tarefaRepository.save(tarefaBanco);
             auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaBanco);
+
+            // LÓGICA DE NOTIFICAÇÃO (ATRIBUIÇÃO/EDIÇÃO) 
+            
+            if (newResponsavelId != null && !newResponsavelId.equals(oldResponsavelId)) {
+                notificationService.sendNotification(
+                    newResponsavelId, 
+                    "Você foi atribuído(a) à tarefa: " + tarefaSalva.getTitulo(),
+                    "/tarefas/" + tarefaSalva.getId() 
+                );
+            }
+            
+            if (tarefaAtualizada.getDataEntrega() != null && 
+                !tarefaAtualizada.getDataEntrega().equals(tarefaAntiga.getDataEntrega()) &&
+                newResponsavelId != null)
+            {
+                notificationService.sendNotification(
+                    newResponsavelId, 
+                    "O prazo da tarefa '" + tarefaSalva.getTitulo() + "' foi alterado.",
+                    "/tarefas/" + tarefaSalva.getId() 
+                );
+            }
+
             return tarefaSalva;
+
         } catch (Exception e) {
             throw new BusinessException("Erro ao atualizar tarefa");
         }
@@ -106,6 +152,17 @@ public class TarefaService {
             tarefa.setAtivo(false);
             tarefaRepository.save(tarefa);
             auditoriaLogService.registrarExclusao(tarefa);
+
+            // LÓGICA DE NOTIFICAÇÃO (EXCLUSÃO) 
+            if (tarefa.getResponsavel() != null) {
+                String responsavelId = tarefa.getResponsavel().id();
+                notificationService.sendNotification(
+                    responsavelId,
+                    "A tarefa '" + tarefa.getTitulo() + "' foi excluída.",
+                    "/tarefas/" + tarefa.getId() 
+                );
+            }
+
         } else {
             throw new BusinessException("Tarefa já está deletada.");
         }
