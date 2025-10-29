@@ -2,6 +2,7 @@ package com.gsw.taskmanager.service;
 
 import java.io.IOException;
 
+import com.gsw.taskmanager.entity.Anexo;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class FileService {
     private AnexoService anexoService;
 
     public ResponseEntity<Resource> criarResponseParaDownload(String tarefaId, String anexoId, HttpServletRequest request) {
-        Tarefa.Anexo anexo = anexoService.buscarAnexoPorId(tarefaId, anexoId);
+        Anexo anexo = anexoService.buscarAnexoPorId(tarefaId, anexoId);
         
         String fileName = extrairNomeArquivoDaUrl(anexo.getUrl());
         Resource resource = fileStorageService.loadFileAsResource(fileName);

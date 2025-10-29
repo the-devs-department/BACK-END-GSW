@@ -1,23 +1,24 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.LoginRequest;
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.UsuarioResponseDto;
-import com.gsw.taskmanager.entity.Usuario;
-import com.gsw.taskmanager.exception.BusinessException;
-import com.gsw.taskmanager.repository.UsuarioRepository;
-import org.jetbrains.annotations.NotNull;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.auth.LoginResponseDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
+import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.taskmanager.exception.BusinessException;
+import com.gsw.taskmanager.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
@@ -27,10 +28,6 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtService jwtService;
-
 
     public List<UsuarioResponseDto> listarTodos() {
         return usuarioRepository.findAll()
@@ -58,25 +55,51 @@ public class UsuarioService {
         )).orElseThrow();
     }
 
-    public UsuarioResponseDto criarUsuario(Usuario user){
-        Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.getEmail());
+    public LoginResponseDto buscarUsuarioAoLogar(String uuid) {
+        Optional<Usuario> usuarioBuscado = usuarioRepository.findById(uuid);
 
-        if (usuarioEncontrado.isPresent()){
+        return usuarioBuscado.map(usuario -> new LoginResponseDto(
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getRoles()
+        )).orElseThrow();
+    }
+
+    public UsuarioResponsavelTarefaDto buscarUsuarioResponsavelTarefa(String email) {
+        Optional<Usuario> usuarioBuscado = usuarioRepository.findByEmail(email);
+
+        return  usuarioBuscado.map(usuario -> new UsuarioResponsavelTarefaDto(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail()
+
+        )).orElseThrow();
+    }
+
+    public UsuarioResponseDto criarUsuario(CriacaoUsuarioDto user) {
+        Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.email());
+
+        if (usuarioEncontrado.isPresent()) {
             throw new DataIntegrityViolationException("Usuário já existe");
         }
-        user.setSenha(passwordEncoder.encode(user.getSenha()));
-        user.setAtivo(true);
-        user.setDataCadastro(LocalDateTime.now());
+        Usuario usuario = new Usuario();
+        usuario.setEmail(user.email());
+        usuario.setNome(user.nome());
+        usuario.setSenha(passwordEncoder.encode(user.senha()));
+        usuario.setAtivo(true);
+        usuario.setDataCadastro(LocalDateTime.now());
+        usuario.setTarefas(new ArrayList<>());
+        usuario.setRoles(List.of("ROLE_USER"));
 
-        usuarioRepository.save(user);
+        usuarioRepository.save(usuario);
 
         return new UsuarioResponseDto(
-                user.getNome(),
-                user.getEmail(),
-                user.getDataCadastro(),
-                user.isAtivo(),
-                user.getTarefas()
-            );
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getDataCadastro(),
+                usuario.isAtivo(),
+                usuario.getTarefas()
+        );
     }
 
     public UsuarioResponseDto atualizarUsuario(UsuarioAlteracaoDto usuario) {
@@ -108,16 +131,9 @@ public class UsuarioService {
         }
     }
 
-    public String autenticar(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado."));
-        if (!usuario.isAtivo()) {
-            throw new IllegalStateException("Usuário inativo");
-        }
-
-        if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
-            throw new BadCredentialsException("Usuário ou senha inválidos");
-        }
-        return jwtService.generateToken(usuario);
+    public void atualizarSenha(String email, String novaSenha) {
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
     }
 }

@@ -1,6 +1,6 @@
 package com.gsw.taskmanager.service;
 
-import com.gsw.taskmanager.dto.DataHoraDto;
+import com.gsw.taskmanager.dto.utils.DataHoraDto;
 import java.time.LocalDateTime;
 
 public class DataHoraService {

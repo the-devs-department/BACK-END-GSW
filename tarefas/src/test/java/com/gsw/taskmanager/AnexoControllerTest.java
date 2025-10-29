@@ -1,9 +1,13 @@
 package com.gsw.taskmanager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gsw.taskmanager.dto.AnexoDto;
+import com.gsw.taskmanager.dto.anexos.AnexoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
+import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.taskmanager.enums.Status;
+import com.gsw.taskmanager.enums.TipoAnexo;
 import com.gsw.taskmanager.repository.TarefaRepository;
 import com.gsw.taskmanager.repository.UsuarioRepository;
 import com.gsw.taskmanager.service.JwtService;
@@ -23,6 +27,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -60,6 +65,30 @@ class AnexoControllerTest {
     private String tarefaId;
     private String usuarioId;
 
+    private Anexo criarAnexoExemplo(
+            String id,
+            String tarefaId,
+            String usuarioId,
+            String nome,
+            TipoAnexo tipo,
+            String url,
+            Long tamanho,
+            LocalDateTime dataUpload
+    ) {
+        Anexo anexo = new Anexo();
+
+        anexo.setId(id != null ? id : UUID.randomUUID().toString());
+        anexo.setTarefaId(tarefaId != null ? tarefaId : "tarefa-default");
+        anexo.setUsuarioId(usuarioId != null ? usuarioId : "usuario-default");
+        anexo.setNome(nome != null ? nome : "documento-teste.pdf");
+        anexo.setTipo(tipo != null ? tipo : TipoAnexo.PDF);
+        anexo.setUrl(url != null ? url : "/uploads/documento-teste.pdf");
+        anexo.setTamanho(tamanho != null ? tamanho : 1024L * 1024L);
+        anexo.setDataUpload(dataUpload != null ? dataUpload : LocalDateTime.now());
+
+        return anexo;
+    }
+
     @BeforeEach
     void setUp() {
         // Limpar coleções
@@ -85,10 +114,11 @@ class AnexoControllerTest {
         tarefa = new Tarefa();
         tarefa.setTitulo("Tarefa de Teste");
         tarefa.setDescricao("Descrição da tarefa para testar anexos");
-        tarefa.setResponsavel(usuarioId);
+        tarefa.getResponsavel().id();
         tarefa.setDataEntrega("2024-12-31");
         tarefa.setTema("Desenvolvimento");
         tarefa.setDataCriacao(LocalDateTime.now());
+        tarefa.setStatus(Status.EM_ANDAMENTO);
         tarefa.setAtivo(true);
         tarefa.setAnexos(new ArrayList<>());
         tarefa = tarefaRepository.save(tarefa);
@@ -104,29 +134,9 @@ class AnexoControllerTest {
     }
 
     @Test
-
     void listarAnexos_DeveRetornarAnexos_QuandoExistem() throws Exception {
-        Tarefa.Anexo anexo1 = Tarefa.Anexo.builder()
-                .id("anexo1")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("documento1.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/documento1.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
-
-        Tarefa.Anexo anexo2 = Tarefa.Anexo.builder()
-                .id("anexo2")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("planilha.xlsx")
-                .tipo(Tarefa.TipoAnexo.XLSX)
-                .url("/uploads/planilha.xlsx")
-                .tamanho(2L * 1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+        Anexo anexo1 = criarAnexoExemplo("anexo1", tarefaId, usuarioId, "documento1.pdf", null, null, null, null);
+        Anexo anexo2 = criarAnexoExemplo("anexo2", tarefaId + "D3", usuarioId, "planilha.xlsx", TipoAnexo.XLSX, null, null, null);
 
         tarefa.getAnexos().add(anexo1);
         tarefa.getAnexos().add(anexo2);
@@ -138,10 +148,10 @@ class AnexoControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is("anexo1")))
                 .andExpect(jsonPath("$[0].nome", is("documento1.pdf")))
-                .andExpect(jsonPath("$[0].tipo", is("application/pdf")))
+                .andExpect(jsonPath("$[0].tipo", is(TipoAnexo.PDF.getMimeType())))
                 .andExpect(jsonPath("$[1].id", is("anexo2")))
                 .andExpect(jsonPath("$[1].nome", is("planilha.xlsx")))
-                .andExpect(jsonPath("$[1].tipo", is("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")));
+                .andExpect(jsonPath("$[1].tipo", is(TipoAnexo.XLSX.getMimeType())));
     }
 
     @Test
@@ -153,16 +163,8 @@ class AnexoControllerTest {
 
     @Test
     void buscarAnexo_DeveRetornarAnexo_QuandoExiste() throws Exception {
-        Tarefa.Anexo anexo = Tarefa.Anexo.builder()
-                .id("anexo123")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("documento.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/documento.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+
+        Anexo anexo = criarAnexoExemplo("anexo123", tarefaId, usuarioId, "documento.pdf", TipoAnexo.PDF, "/uploads/documento.pdf", null, null);
 
         tarefa.getAnexos().add(anexo);
         tarefaRepository.save(tarefa);
@@ -172,7 +174,7 @@ class AnexoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is("anexo123")))
                 .andExpect(jsonPath("$.nome", is("documento.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")))
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.PDF.getMimeType())))
                 .andExpect(jsonPath("$.usuarioId", is(usuarioId)))
                 .andExpect(jsonPath("$.tamanho", is(1048576)));
     }
@@ -185,82 +187,16 @@ class AnexoControllerTest {
     }
 
     @Test
-    void adicionarAnexo_DeveCriarAnexoComSucesso() throws Exception {
-        AnexoDto anexoDto = new AnexoDto();
-        anexoDto.setNome("novo_documento.pdf");
-        anexoDto.setTipo(Tarefa.TipoAnexo.PDF);
-        anexoDto.setUrl("/uploads/novo_documento.pdf");
-        anexoDto.setTamanho(1024L * 1024L); // 1MB
-        anexoDto.setUsuarioId(usuarioId);
-
-        String anexoDtoJson = objectMapper.writeValueAsString(anexoDto);
-
-        mockMvc.perform(post("/tarefas/{tarefaId}/anexos", tarefaId)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(anexoDtoJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nome", is("novo_documento.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")))
-                .andExpect(jsonPath("$.usuarioId", is(usuarioId)))
-                .andExpect(jsonPath("$.tarefaId", is(tarefaId)))
-                .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.dataUpload", notNullValue()));
-    }
-
-    @Test
-    void adicionarAnexo_DeveRetornar400_QuandoExcedeLimite() throws Exception {
-        for (int i = 0; i < 19; i++) {
-            Tarefa.Anexo anexoExistente = Tarefa.Anexo.builder()
-                    .id("anexo" + i)
-                    .tarefaId(tarefaId)
-                    .usuarioId(usuarioId)
-                    .nome("arquivo" + i + ".pdf")
-                    .tipo(Tarefa.TipoAnexo.PDF)
-                    .url("/uploads/arquivo" + i + ".pdf")
-                    .tamanho(1024L * 1024L) // 1MB cada
-                    .dataUpload(LocalDateTime.now())
-                    .build();
-            tarefa.getAnexos().add(anexoExistente);
-        }
-        tarefaRepository.save(tarefa);
-
-        AnexoDto anexoDto = new AnexoDto();
-        anexoDto.setNome("arquivo_grande.pdf");
-        anexoDto.setTipo(Tarefa.TipoAnexo.PDF);
-        anexoDto.setUrl("/uploads/arquivo_grande.pdf");
-        anexoDto.setTamanho(2L * 1024L * 1024L); // 2MB
-        anexoDto.setUsuarioId(usuarioId);
-
-        String anexoDtoJson = objectMapper.writeValueAsString(anexoDto);
-
-        mockMvc.perform(post("/tarefas/{tarefaId}/anexos", tarefaId)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(anexoDtoJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", containsString("Limite de anexos excedido")));
-    }
-
-    @Test
     void atualizarAnexo_DeveAtualizarComSucesso() throws Exception {
-        Tarefa.Anexo anexoExistente = Tarefa.Anexo.builder()
-                .id("anexo123")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("documento_original.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/documento_original.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+
+        Anexo anexoExistente = criarAnexoExemplo("anexo123", null , null, "documento_original.pdf", TipoAnexo.PDF, "/uploads/documento_original.pdf", null, null);
 
         tarefa.getAnexos().add(anexoExistente);
         tarefaRepository.save(tarefa);
 
         AnexoDto anexoAtualizado = new AnexoDto();
         anexoAtualizado.setNome("documento_atualizado.pdf");
-        anexoAtualizado.setTipo(Tarefa.TipoAnexo.DOCX);
+        anexoAtualizado.setTipo(TipoAnexo.DOCX);
 
         String anexoDtoJson = objectMapper.writeValueAsString(anexoAtualizado);
 
@@ -270,21 +206,7 @@ class AnexoControllerTest {
                 .content(anexoDtoJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("documento_atualizado.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/vnd.openxmlformats-officedocument.wordprocessingml.document")));
-    }
-
-    @Test
-    void atualizarAnexo_DeveRetornar404_QuandoAnexoNaoExiste() throws Exception {
-        AnexoDto anexoAtualizado = new AnexoDto();
-        anexoAtualizado.setNome("documento_atualizado.pdf");
-
-        String anexoDtoJson = objectMapper.writeValueAsString(anexoAtualizado);
-
-        mockMvc.perform(put("/tarefas/{tarefaId}/anexos/{anexoId}", tarefaId, "anexoInexistente")
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(anexoDtoJson))
-                .andExpect(status().isNotFound());
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.DOCX.getMimeType())));
     }
 
     @Test
@@ -300,18 +222,9 @@ class AnexoControllerTest {
         outroUsuario = usuarioRepository.save(outroUsuario);
         String outroToken = jwtService.generateToken(outroUsuario);
 
-        Tarefa.Anexo anexo = Tarefa.Anexo.builder()
-                .id("anexo123")
-                .tarefaId(tarefaId)
-                .usuarioId("usuarioProprietarioDoAnexo") // Diferente do usuário autenticado
-                .nome("documento.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/documento.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+        Anexo anexo = criarAnexoExemplo("anexo123", tarefaId , "usuarioProprietarioDoAnexo", "documento.pdf", TipoAnexo.PDF, "/uploads/documento.pdf", null, null);
 
-        tarefa.setResponsavel("outroResponsavel"); // Tarefa não pertence ao usuário autenticado
+        tarefa.setResponsavel(new UsuarioResponsavelTarefaDto("id","Nome","Email")); // Tarefa não pertence ao usuário autenticado
         tarefa.getAnexos().add(anexo);
         tarefaRepository.save(tarefa);
 
@@ -340,16 +253,7 @@ class AnexoControllerTest {
         mockMvc.perform(get("/tarefas/{tarefaId}/anexos", tarefaId))
                 .andExpect(status().isOk());
 
-        Tarefa.Anexo anexo = Tarefa.Anexo.builder()
-                .id("anexo_leitura_teste")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("documento_leitura.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/documento_leitura.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+        Anexo anexo = criarAnexoExemplo("anexo_leitura_teste", tarefaId , usuarioId, "documento_leitura.pdf", TipoAnexo.PDF, "/uploads/documento_leitura.pdf", null, null);
 
         tarefa.getAnexos().add(anexo);
         tarefaRepository.save(tarefa);
@@ -358,7 +262,7 @@ class AnexoControllerTest {
         mockMvc.perform(get("/tarefas/{tarefaId}/anexos/{anexoId}", tarefaId, "anexo_leitura_teste"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("documento_leitura.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")));
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.PDF.getMimeType())));
 
 
         mockMvc.perform(get("/tarefas/{tarefaId}/anexos", tarefaId))
@@ -368,63 +272,12 @@ class AnexoControllerTest {
     }
 
     @Test
-    void adicionarAnexo_DeveValidarTiposDeAnexoSuportados() throws Exception {
-        Tarefa.TipoAnexo[] tiposSuportados = {
-            Tarefa.TipoAnexo.PDF,
-            Tarefa.TipoAnexo.DOCX,
-            Tarefa.TipoAnexo.MP4,
-            Tarefa.TipoAnexo.JPEG,
-            Tarefa.TipoAnexo.XLSX
-        };
-
-        for (Tarefa.TipoAnexo tipo : tiposSuportados) {
-            AnexoDto anexoDto = new AnexoDto();
-            anexoDto.setNome("arquivo." + tipo.name().toLowerCase());
-            anexoDto.setTipo(tipo);
-            anexoDto.setUrl("/uploads/arquivo." + tipo.name().toLowerCase());
-            anexoDto.setTamanho(1024L * 1024L); // 1MB
-            anexoDto.setUsuarioId(usuarioId);
-
-            String anexoDtoJson = objectMapper.writeValueAsString(anexoDto);
-
-            mockMvc.perform(post("/tarefas/{tarefaId}/anexos", tarefaId)
-                    .header("Authorization", "Bearer " + token)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(anexoDtoJson))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.tipo", is(tipo.getMimeType())));
-
-            // Limpar anexos para o próximo teste
-            tarefa.getAnexos().clear();
-            tarefaRepository.save(tarefa);
-        }
-    }
-
-    @Test
     void listarAnexos_DeveRetornarAnexosOrdenadosPorDataUpload() throws Exception {
         LocalDateTime agora = LocalDateTime.now();
-        
-        Tarefa.Anexo anexo1 = Tarefa.Anexo.builder()
-                .id("anexo1")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("primeiro.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/primeiro.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(agora.minusHours(2))
-                .build();
 
-        Tarefa.Anexo anexo2 = Tarefa.Anexo.builder()
-                .id("anexo2")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("segundo.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/segundo.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(agora.minusHours(1))
-                .build();
+        Anexo anexo1 = criarAnexoExemplo("anexo1", tarefaId , usuarioId, "primeiro.pdf", TipoAnexo.PDF, "/uploads/primeiro.pdf", null, agora.minusHours(2));
+
+        Anexo anexo2 = criarAnexoExemplo("anexo2", tarefaId , usuarioId, "segundo.pdf", TipoAnexo.PDF, "/uploads/segundo.pdf", null, agora.minusHours(1));
 
         tarefa.getAnexos().add(anexo1);
         tarefa.getAnexos().add(anexo2);
@@ -443,7 +296,7 @@ class AnexoControllerTest {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo",
                 "documento.pdf",
-                "application/pdf",
+                TipoAnexo.PDF.getMimeType(),
                 "conteudo do arquivo PDF".getBytes()
         );
 
@@ -452,7 +305,7 @@ class AnexoControllerTest {
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nome", is("documento.pdf")))
-                .andExpect(jsonPath("$.tipo", is("application/pdf")))
+                .andExpect(jsonPath("$.tipo", is(TipoAnexo.PDF.getMimeType())))
                 .andExpect(jsonPath("$.tarefaId", is(tarefaId)))
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.dataUpload", notNullValue()));
@@ -463,7 +316,7 @@ class AnexoControllerTest {
         MockMultipartFile arquivo = new MockMultipartFile(
                 "arquivo",
                 "arquivo_vazio.pdf",
-                "application/pdf",
+                TipoAnexo.PDF.getMimeType(),
                 new byte[0]
         );
 
@@ -477,16 +330,8 @@ class AnexoControllerTest {
 
     @Test
     void obterUrlDownload_DeveRetornarUrlCorreta() throws Exception {
-        Tarefa.Anexo anexo = Tarefa.Anexo.builder()
-                .id("anexo123")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("documento.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/documento.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+
+        Anexo anexo = criarAnexoExemplo("anexo123", tarefaId , usuarioId, "documento.pdf", TipoAnexo.PDF, "/uploads/documento.pdf", null, null);
 
         tarefa.getAnexos().add(anexo);
         tarefaRepository.save(tarefa);
@@ -507,16 +352,8 @@ class AnexoControllerTest {
 
     @Test
     void baixarArquivoAnexo_DeveRetornar400_QuandoArquivoNaoExisteNoSistema() throws Exception {
-        Tarefa.Anexo anexo = Tarefa.Anexo.builder()
-                .id("anexo123")
-                .tarefaId(tarefaId)
-                .usuarioId(usuarioId)
-                .nome("documento.pdf")
-                .tipo(Tarefa.TipoAnexo.PDF)
-                .url("/uploads/test/documento_inexistente.pdf")
-                .tamanho(1024L * 1024L)
-                .dataUpload(LocalDateTime.now())
-                .build();
+
+        Anexo anexo = criarAnexoExemplo("anexo123", tarefaId , usuarioId, "documento.pdf", TipoAnexo.PDF, "/uploads/test/documento_inexistente.pdf", null, null);
 
         tarefa.getAnexos().add(anexo);
         tarefaRepository.save(tarefa);
@@ -524,5 +361,84 @@ class AnexoControllerTest {
         mockMvc.perform(get("/tarefas/{tarefaId}/anexos/{anexoId}/arquivo/download", tarefaId, "anexo123")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void adicionarAnexoComUpload_DeveRetornar400_QuandoTipoArquivoInvalido() throws Exception {
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo",
+                "documento.txt",
+                "text/plain",
+                "conteudo do arquivo TXT".getBytes()
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/tarefas/{tarefaId}/anexos/upload", tarefaId)
+                .file(arquivo)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("Tipo de arquivo não suportado")));
+    }
+
+    @Test
+    void adicionarAnexoComUpload_DeveRetornar400_QuandoLimiteAnexosExcedido() throws Exception {
+        // Criar um arquivo grande que excede o limite (> 20MB)
+        byte[] arquivoGrande = new byte[21 * 1024 * 1024]; // 21MB
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo",
+                "arquivo_grande.pdf",
+                TipoAnexo.PDF.getMimeType(),
+                arquivoGrande
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/tarefas/{tarefaId}/anexos/upload", tarefaId)
+                .file(arquivo)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("Limite de anexos excedido")));
+    }
+
+    @Test
+    void atualizarAnexo_DeveRetornar404_QuandoTarefaNaoExiste() throws Exception {
+        AnexoDto anexoAtualizado = new AnexoDto();
+        anexoAtualizado.setNome("documento_atualizado.pdf");
+        anexoAtualizado.setTipo(TipoAnexo.PDF);
+
+        String anexoDtoJson = objectMapper.writeValueAsString(anexoAtualizado);
+
+        mockMvc.perform(put("/tarefas/{tarefaId}/anexos/{anexoId}", "tarefaInexistente", "anexo123")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(anexoDtoJson))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void atualizarAnexo_DeveRetornar404_QuandoAnexoNaoExiste() throws Exception {
+        AnexoDto anexoAtualizado = new AnexoDto();
+        anexoAtualizado.setNome("documento_atualizado.pdf");
+        anexoAtualizado.setTipo(TipoAnexo.PDF);
+
+        String anexoDtoJson = objectMapper.writeValueAsString(anexoAtualizado);
+
+        mockMvc.perform(put("/tarefas/{tarefaId}/anexos/{anexoId}", tarefaId, "anexoInexistente")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(anexoDtoJson))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void adicionarAnexoComUpload_DeveRetornar404_QuandoTarefaNaoExiste() throws Exception {
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo",
+                "documento.pdf",
+                "application/pdf",
+                "conteudo do arquivo PDF".getBytes()
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/tarefas/{tarefaId}/anexos/upload", "tarefaInexistente")
+                .file(arquivo)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
     }
 }

@@ -1,8 +1,11 @@
 package com.gsw.taskmanager.service;
 
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
+import com.gsw.taskmanager.entity.AuditoriaLog;
 import com.gsw.taskmanager.entity.Tarefa;
 import com.gsw.taskmanager.exception.BusinessException;
 import com.gsw.taskmanager.repository.TarefaRepository;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,14 @@ public class TarefaService {
     @Autowired
     private TarefaRepository tarefaRepository;
 
+    @Autowired
+    private AuditoriaLogService logService;
+    @Autowired
+    private AuditoriaLogService auditoriaLogService;
+
+    @Autowired
+    private NotificationService notificationService;
+
     // LISTAR TODAS (apenas ativas)
     public List<Tarefa> listarTodas() {
         return tarefaRepository.findAll()
@@ -26,7 +37,7 @@ public class TarefaService {
 
     // Listar tarefas por membro da equipe (responsável)
     public List<Tarefa> listarPorResponsavel(String usuarioId) {
-        return tarefaRepository.findByResponsavel(usuarioId)
+        return tarefaRepository.findByResponsavelId(usuarioId)
                 .stream()
                 .filter(Tarefa::isAtivo)
                 .toList();
@@ -41,15 +52,43 @@ public class TarefaService {
     }
 
     // CRIAR
-    public Tarefa criar(Tarefa tarefa) {
+   public Tarefa criar(Tarefa tarefa) {
         tarefa.setAtivo(true);
-        tarefa.setDataCriacao(LocalDateTime.now()); // se tiver esse campo
-        return tarefaRepository.save(tarefa);
+        tarefa.setDataCriacao(LocalDateTime.now());
+
+        try {
+            Tarefa tarefaSalva = tarefaRepository.save(tarefa);
+            AuditoriaLog log = logService.registrarCriacao(tarefaSalva);
+            System.out.println(log.getModificacoes());
+            
+            
+            tarefaRepository.save(tarefaSalva); 
+
+            // LÓGICA DE NOTIFICAÇÃO (CRIAÇÃO) 
+            if (tarefaSalva.getResponsavel() != null) {
+                UsuarioResponsavelTarefaDto responsavelDto = tarefaSalva.getResponsavel();
+                String userIdParaNotificar = responsavelDto.id();
+                String message = "Nova tarefa atribuída a você: " + tarefaSalva.getTitulo();
+                String link = "/tarefas/" + tarefaSalva.getId(); 
+                
+                notificationService.sendNotification(userIdParaNotificar, message, link);
+            }
+
+            return tarefaSalva;
+
+        } catch (Exception e) {
+            throw new BusinessException("Erro ao criar tarefa");
+        }
     }
 
     // ATUALIZAR
     public Tarefa atualizar(String id, Tarefa tarefaAtualizada) {
         Tarefa tarefaBanco = tarefaRepository.findById(id).orElseThrow();
+        Tarefa tarefaAntiga = SerializationUtils.clone(tarefaBanco);
+
+        String oldResponsavelId = (tarefaAntiga.getResponsavel() != null)
+                                  ? tarefaAntiga.getResponsavel().id()
+                                  : null;
 
         if (tarefaAtualizada.getTitulo() != null) {
             tarefaBanco.setTitulo(tarefaAtualizada.getTitulo());
@@ -69,8 +108,41 @@ public class TarefaService {
         if(tarefaAtualizada.getStatus()!=null){
             tarefaBanco.setStatus(tarefaAtualizada.getStatus());
         }
-        
-        return tarefaRepository.save(tarefaBanco);
+
+        String newResponsavelId = (tarefaBanco.getResponsavel() != null)
+                                  ? tarefaBanco.getResponsavel().id()
+                                  : null;
+
+       try {
+            Tarefa tarefaSalva = tarefaRepository.save(tarefaBanco);
+            auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaBanco);
+
+            // LÓGICA DE NOTIFICAÇÃO (ATRIBUIÇÃO/EDIÇÃO) 
+            
+            if (newResponsavelId != null && !newResponsavelId.equals(oldResponsavelId)) {
+                notificationService.sendNotification(
+                    newResponsavelId, 
+                    "Você foi atribuído(a) à tarefa: " + tarefaSalva.getTitulo(),
+                    "/tarefas/" + tarefaSalva.getId() 
+                );
+            }
+            
+            if (tarefaAtualizada.getDataEntrega() != null && 
+                !tarefaAtualizada.getDataEntrega().equals(tarefaAntiga.getDataEntrega()) &&
+                newResponsavelId != null)
+            {
+                notificationService.sendNotification(
+                    newResponsavelId, 
+                    "O prazo da tarefa '" + tarefaSalva.getTitulo() + "' foi alterado.",
+                    "/tarefas/" + tarefaSalva.getId() 
+                );
+            }
+
+            return tarefaSalva;
+
+        } catch (Exception e) {
+            throw new BusinessException("Erro ao atualizar tarefa");
+        }
     }
 
     // "DELETAR" (soft delete)
@@ -79,13 +151,25 @@ public class TarefaService {
         if (tarefa.isAtivo()) {
             tarefa.setAtivo(false);
             tarefaRepository.save(tarefa);
+            auditoriaLogService.registrarExclusao(tarefa);
+
+            // LÓGICA DE NOTIFICAÇÃO (EXCLUSÃO) 
+            if (tarefa.getResponsavel() != null) {
+                String responsavelId = tarefa.getResponsavel().id();
+                notificationService.sendNotification(
+                    responsavelId,
+                    "A tarefa '" + tarefa.getTitulo() + "' foi excluída.",
+                    "/tarefas/" + tarefa.getId() 
+                );
+            }
+
         } else {
             throw new BusinessException("Tarefa já está deletada.");
         }
     }
 
-    public Tarefa salvarTarefa(Tarefa tarefa) {
-        return tarefaRepository.save(tarefa);
+    public void salvarTarefa(Tarefa tarefa) {
+        tarefaRepository.save(tarefa);
     }
 
 }

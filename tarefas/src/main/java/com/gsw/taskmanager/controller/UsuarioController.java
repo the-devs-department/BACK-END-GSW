@@ -1,15 +1,26 @@
 package com.gsw.taskmanager.controller;
 
-import com.gsw.taskmanager.dto.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.UsuarioResponseDto;
-import com.gsw.taskmanager.entity.Usuario;
-import com.gsw.taskmanager.service.UsuarioService;
-import jakarta.validation.Valid;
+import java.util.List;
+
+import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
+import com.gsw.taskmanager.dto.auth.LoginResponseDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
+import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
+import com.gsw.taskmanager.service.UsuarioService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("usuarios")
@@ -32,20 +43,30 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }
 
+    @GetMapping("/getOnLogin/{id}")
+    public ResponseEntity<LoginResponseDto> buscarUsuarioAoLogar(@PathVariable String id){
+        LoginResponseDto usuario = usuarioService.buscarUsuarioAoLogar(id);
+        return ResponseEntity.ok(usuario);
+    }
+
+    @GetMapping("/assignedUser/{email}")
+    public ResponseEntity<UsuarioResponsavelTarefaDto> buscarUsuarioResponsavelTarefa(@PathVariable String email) {
+        UsuarioResponsavelTarefaDto usuario = usuarioService.buscarUsuarioResponsavelTarefa(email);
+        return ResponseEntity.ok(usuario);
+    }
+
     // CRIAR USUÁRIO
     @PostMapping("/criar")
-    public ResponseEntity<UsuarioResponseDto> criarUsuario(@RequestBody @Valid Usuario usuario) {
+    public ResponseEntity<UsuarioResponseDto> criarUsuario(@RequestBody @Valid CriacaoUsuarioDto usuario) {
         UsuarioResponseDto novoUsuario = usuarioService.criarUsuario(usuario);
         return ResponseEntity.ok(novoUsuario);
     }
 
-    //TODO ENDPOINT /UPDATE
     @PutMapping("/atualizar")
     public ResponseEntity<UsuarioResponseDto> atualizarUsuario(@RequestBody @Valid UsuarioAlteracaoDto usuario) {
         return ResponseEntity.ok(usuarioService.atualizarUsuario(usuario));
     }
 
-    //TODO ENDPOINT /DELETE_BY_ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarUsuario(@PathVariable String id) {
         usuarioService.deletarById(id);
