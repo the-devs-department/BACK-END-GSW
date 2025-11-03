@@ -40,6 +40,10 @@ public class SecurityConfig {
                     .requestMatchers("/notifications/**").authenticated()
                     .requestMatchers("/auth/recuperar-senha").permitAll()
                     .requestMatchers("/auth/resetar-senha/**").permitAll()
+                    // Rotas do Swagger/OpenAPI
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/swagger-ui.html").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

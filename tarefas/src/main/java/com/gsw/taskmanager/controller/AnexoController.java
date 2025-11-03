@@ -3,6 +3,7 @@ package com.gsw.taskmanager.controller;
 import java.util.List;
 
 import com.gsw.taskmanager.entity.Anexo;
+import com.gsw.taskmanager.entity.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -47,7 +48,8 @@ public class AnexoController {
             @PathVariable String tarefaId,
             @RequestParam("arquivo") MultipartFile arquivo) {
         
-        String usuarioId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioAutenticado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String usuarioId = usuarioAutenticado.getId();
         
         Anexo novoAnexo = anexoService.adicionarAnexo(tarefaId, usuarioId, arquivo);
         return ResponseEntity.status(201).body(novoAnexo);
