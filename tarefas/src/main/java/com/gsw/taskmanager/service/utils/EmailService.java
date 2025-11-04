@@ -58,7 +58,7 @@ public class EmailService {
 
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            message.setFrom("gswnoreplyplease@gmail.com");
+            message.setFrom("thedevsgswnoreply@gmail.com");
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(htmlBody, true);

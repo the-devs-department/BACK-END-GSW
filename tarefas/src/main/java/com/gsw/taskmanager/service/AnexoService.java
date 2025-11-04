@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import com.gsw.taskmanager.entity.Anexo;
 import com.gsw.taskmanager.entity.Tarefa;
+import com.gsw.taskmanager.entity.Usuario;
 import com.gsw.taskmanager.enums.TipoAnexo;
 import org.bson.types.ObjectId;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -117,7 +118,8 @@ public class AnexoService {
     // TODO REGISTRAR REMOÇÃO DO ANEXO
     public void removerAnexo(String tarefaId, String anexoId) {
 
-        String usuarioAtual = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuarioAutenticado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String usuarioAtual = usuarioAutenticado.getId();
         
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
                 .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));

@@ -6,10 +6,11 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class Anexo {
+public class Anexo implements Serializable {
 
     @Id
     private String id;
