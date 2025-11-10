@@ -1,8 +1,8 @@
-package com.gsw.taskmanager.controller;
+package com.gsw.service_usuario.controller;
 
 import java.util.List;
 
-import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
+import com.gsw.service_usuario.dto.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
-import com.gsw.taskmanager.dto.auth.LoginResponseDto;
-import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
-import com.gsw.taskmanager.service.UsuarioService;
+import com.gsw.service_usuario.dto.CriacaoUsuarioDto;
+import com.gsw.service_usuario.dto.auth.LoginResponseDto;
+import com.gsw.service_usuario.dto.UsuarioAlteracaoDto;
+import com.gsw.service_usuario.dto.UsuarioResponseDto;
+import com.gsw.service_usuario.service.UsuarioService;
 
 import jakarta.validation.Valid;
 

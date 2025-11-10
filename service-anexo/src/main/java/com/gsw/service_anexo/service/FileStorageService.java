@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.service;
+package com.gsw.service_anexo.service;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +13,8 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.gsw.taskmanager.exception.anexo.ErroArmazenamentoArquivoException;
-import com.gsw.taskmanager.exception.anexo.ArquivoNaoEncontradoException;
+import com.gsw.service_anexo.exceptions.ErroArmazenamentoArquivoException;
+import com.gsw.service_anexo.exceptions.ArquivoNaoEncontradoException;
 
 @Service
 public class FileStorageService {

@@ -1,9 +1,7 @@
-package com.gsw.taskmanager.dto.usuario;
+package com.gsw.service_usuario.dto;
 
-import com.gsw.taskmanager.entity.Tarefa;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
-
 import java.util.List;
 
 public record CriacaoUsuarioDto (

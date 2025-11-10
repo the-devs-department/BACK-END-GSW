@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.exception.anexo;
+package com.gsw.service_anexo.exceptions;
 
 public class LimiteAnexosExcedidoException extends RuntimeException {
     public LimiteAnexosExcedidoException(String message) {

@@ -1,7 +1,4 @@
-package com.gsw.taskmanager.dto.usuario;
-
-import com.gsw.taskmanager.entity.Tarefa;
-
+package com.gsw.service_usuario.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 

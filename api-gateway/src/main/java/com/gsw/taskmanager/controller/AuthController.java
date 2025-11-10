@@ -1,10 +1,10 @@
 package com.gsw.taskmanager.controller;
 
-import com.gsw.taskmanager.dto.auth.LoginRequest;
-import com.gsw.taskmanager.dto.auth.PasswordRequestEmailDto;
-import com.gsw.taskmanager.dto.auth.PasswordResetRequest;
-import com.gsw.taskmanager.dto.auth.TokenResponse;
 import com.gsw.taskmanager.service.PasswordResetService;
+import com.gsw.service_usuario.auth.LoginRequest;
+import com.gsw.service_usuario.auth.PasswordRequestEmailDto;
+import com.gsw.service_usuario.auth.PasswordResetRequest;
+import com.gsw.service_usuario.auth.TokenResponse;
 import com.gsw.taskmanager.service.JwtService;
 import com.gsw.taskmanager.service.TokenService;
 import com.gsw.taskmanager.service.UsuarioService;

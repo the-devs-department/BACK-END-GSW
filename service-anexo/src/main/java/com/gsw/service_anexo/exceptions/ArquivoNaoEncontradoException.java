@@ -1,6 +1,4 @@
-package com.gsw.taskmanager.exception.anexo;
-
-import com.gsw.taskmanager.exception.BusinessException;
+package com.gsw.service_anexo.exceptions;
 
 public class ArquivoNaoEncontradoException extends BusinessException {
     public ArquivoNaoEncontradoException(String message) {

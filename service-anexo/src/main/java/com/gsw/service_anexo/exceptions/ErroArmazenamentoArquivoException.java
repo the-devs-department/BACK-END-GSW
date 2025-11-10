@@ -1,6 +1,5 @@
-package com.gsw.taskmanager.exception.anexo;
+package com.gsw.service_anexo.exceptions;
 
-import com.gsw.taskmanager.exception.BusinessException;
 
 public class ErroArmazenamentoArquivoException extends BusinessException {
     public ErroArmazenamentoArquivoException(String message) {

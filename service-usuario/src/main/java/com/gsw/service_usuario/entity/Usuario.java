@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.entity;
+package com.gsw.service_usuario.entity;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Getter 
-@Setter 
+@Setter
 @Document(collection = "users")
 @NoArgsConstructor
 @AllArgsConstructor

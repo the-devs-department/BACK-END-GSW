@@ -46,7 +46,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -69,6 +68,18 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+		<dependencyManagement>
+    	<dependencies>
+        	<dependency>
+            	<groupId>org.springframework.cloud</groupId>
+            	<artifactId>spring-cloud-dependencies</artifactId>
+            	<version>2025.0.0</version> <!-- ou a versão compatível com seu Spring Boot -->
+            	<type>pom</type>
+            	<scope>import</scope>
+        	</dependency>
+    	</dependencies>	
+	</dependencyManagement>
+
 
 	<build>
 		<plugins>
@@ -97,6 +108,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>
+	</build> 
 
 </project>

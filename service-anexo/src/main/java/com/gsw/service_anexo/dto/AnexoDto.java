@@ -1,6 +1,6 @@
-package com.gsw.taskmanager.dto.anexos;
+package com.gsw.service_anexo.dto;
 
-import com.gsw.taskmanager.enums.TipoAnexo;
+import com.gsw.service_anexo.enums.TipoAnexo;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

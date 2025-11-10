@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.enums;
+package com.gsw.service_anexo.enums;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

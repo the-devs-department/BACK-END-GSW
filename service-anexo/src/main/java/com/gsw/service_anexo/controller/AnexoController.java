@@ -1,9 +1,8 @@
-package com.gsw.taskmanager.controller;
+package com.gsw.service_anexo.controller;
 
 import java.util.List;
 
-import com.gsw.taskmanager.entity.Anexo;
-import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.service_anexo.entity.Anexo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -14,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.gsw.taskmanager.dto.anexos.AnexoDto;
-import com.gsw.taskmanager.service.AnexoService;
-import com.gsw.taskmanager.service.FileService;
+import com.gsw.service_anexo.dto.AnexoDto;
+import com.gsw.service_anexo.service.AnexoService;
+import com.gsw.service_anexo.service.FileService;
 
 @RestController
 @RequestMapping("/tarefas")

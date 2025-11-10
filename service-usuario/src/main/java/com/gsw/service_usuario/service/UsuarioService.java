@@ -1,24 +1,23 @@
-package com.gsw.taskmanager.service;
+package com.gsw.service_usuario.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.gsw.taskmanager.dto.usuario.UsuarioResponsavelTarefaDto;
+import com.gsw.service_usuario.dto.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.gsw.taskmanager.dto.usuario.CriacaoUsuarioDto;
-import com.gsw.taskmanager.dto.auth.LoginResponseDto;
-import com.gsw.taskmanager.dto.usuario.UsuarioAlteracaoDto;
-import com.gsw.taskmanager.dto.usuario.UsuarioResponseDto;
-import com.gsw.taskmanager.entity.Usuario;
-import com.gsw.taskmanager.exception.BusinessException;
-import com.gsw.taskmanager.repository.UsuarioRepository;
+import com.gsw.service_usuario.dto.CriacaoUsuarioDto;
+import com.gsw.service_usuario.dto.auth.LoginResponseDto;
+import com.gsw.service_usuario.dto.UsuarioAlteracaoDto;
+import com.gsw.service_usuario.dto.UsuarioResponseDto;
+import com.gsw.service_usuario.entity.Usuario;
+import com.gsw.service_usuario.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {

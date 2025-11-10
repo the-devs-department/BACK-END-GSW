@@ -1,6 +1,6 @@
-package com.gsw.taskmanager.repository;
+package com.gsw.service_usuario.repository;
 
-import com.gsw.taskmanager.entity.Usuario;
+import com.gsw.service_usuario.entity.Usuario;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.dto.usuario;
+package com.gsw.service_usuario.dto;
 
 import java.io.Serializable;
 

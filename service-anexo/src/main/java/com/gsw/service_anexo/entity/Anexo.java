@@ -1,6 +1,6 @@
-package com.gsw.taskmanager.entity;
+package com.gsw.service_anexo.entity;
 
-import com.gsw.taskmanager.enums.TipoAnexo;
+import com.gsw.service_anexo.enums.TipoAnexo;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;

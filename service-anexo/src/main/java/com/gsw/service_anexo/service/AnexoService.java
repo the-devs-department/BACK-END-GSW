@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.service;
+package com.gsw.service_anexo.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -6,9 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
 
-import com.gsw.taskmanager.entity.Anexo;
-import com.gsw.taskmanager.entity.Usuario;
-import com.gsw.taskmanager.enums.TipoAnexo;
+import com.gsw.service_anexo.entity.Anexo;
+import com.gsw.service_anexo.enums.TipoAnexo;
 import org.bson.types.ObjectId;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,15 +15,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gsw.service_tarefa.entity.Tarefa;
-import com.gsw.service_tarefa.repository.TarefaRepository;
-import com.gsw.taskmanager.dto.anexos.AnexoDto;
-import com.gsw.taskmanager.exception.anexo.AcessoNegadoAnexoException;
-import com.gsw.taskmanager.exception.anexo.AnexoNaoEncontradoException;
-import com.gsw.taskmanager.exception.anexo.LimiteAnexosExcedidoException;
-import com.gsw.taskmanager.exception.anexo.TarefaNaoEncontradaException;
-import com.gsw.taskmanager.exception.anexo.UploadNaoPermitidoException;
-import com.gsw.taskmanager.exception.anexo.TipoAnexoInvalidoException;
+import com.gsw.service_anexo.dto.AnexoDto;
+import com.gsw.service_anexo.exceptions.AcessoNegadoAnexoException;
+import com.gsw.service_anexo.exceptions.AnexoNaoEncontradoException;
+import com.gsw.service_anexo.exceptions.LimiteAnexosExcedidoException;
+import com.gsw.service_anexo.exceptions.TarefaNaoEncontradaException;
+import com.gsw.service_anexo.exceptions.UploadNaoPermitidoException;
+import com.gsw.service_anexo.exceptions.TipoAnexoInvalidoException;
 
 @Service
 public class AnexoService {

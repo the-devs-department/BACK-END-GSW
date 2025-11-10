@@ -1,8 +1,8 @@
-package com.gsw.taskmanager.service;
+package com.gsw.service_anexo.service;
 
 import java.io.IOException;
 
-import com.gsw.taskmanager.entity.Anexo;
+import com.gsw.service_anexo.entity.Anexo;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.gsw.taskmanager.entity.Tarefa;
 
 @Service
 public class FileService {
