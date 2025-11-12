@@ -1,11 +1,6 @@
 package com.gsw.service_tarefa.service;
 
-import com.gsw.service_tarefa.dto.usuario.UsuarioResponsavelTarefaDto;
 import com.gsw.service_tarefa.entity.Tarefa;
-import com.gsw.service_tarefa.entity.Usuario;
-import com.gsw.service_tarefa.exception.anexo.TarefaNaoEncontradaException;
-import com.gsw.service_tarefa.repository.UsuarioRepository;
-import com.gsw.service_tarefa.service.AuditoriaLogService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package com.gsw.taskmanager.repository;
+package com.gsw.service_tarefa.repository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-import com.gsw.taskmanager.entity.Tarefa;
+import com.gsw.service_tarefa.entity.Tarefa;
 import java.util.List;
 import org.springframework.data.mongodb.repository.Query;
 

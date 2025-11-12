@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.enums;
+package com.gsw.service_log.enums;
 
 public enum CategoriaModificacao {
     EDICAO("Edição"),

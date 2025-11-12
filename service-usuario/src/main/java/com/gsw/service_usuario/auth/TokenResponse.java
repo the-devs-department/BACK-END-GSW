@@ -1,4 +1,4 @@
-package com.gsw.service_usuario.dto.auth;
+package com.gsw.service_usuario.auth;
 
 public record TokenResponse(String token, String idUsuario) {
 }

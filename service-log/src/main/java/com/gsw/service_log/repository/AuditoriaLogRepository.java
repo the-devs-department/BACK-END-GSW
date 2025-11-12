@@ -1,6 +1,6 @@
-package com.gsw.taskmanager.repository;
+package com.gsw.service_log.repository;
 
-import com.gsw.taskmanager.entity.AuditoriaLog;
+import com.gsw.service_log.entity.AuditoriaLog;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

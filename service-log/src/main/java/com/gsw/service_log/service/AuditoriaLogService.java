@@ -1,21 +1,18 @@
-package com.gsw.taskmanager.service;
+package com.gsw.service_log.service;
 
-import com.gsw.service_tarefa.entity.Tarefa;
-import com.gsw.service_tarefa.repository.TarefaRepository;
-import com.gsw.taskmanager.dto.logs.AuditoriaResponseDto;
-import com.gsw.taskmanager.dto.logs.ModificacaoLogDto;
-import com.gsw.taskmanager.dto.logs.ResponsavelAlteracaoDto;
-import com.gsw.taskmanager.entity.Anexo;
-import com.gsw.taskmanager.entity.AuditoriaLog;
-import com.gsw.taskmanager.entity.Usuario;
-import com.gsw.taskmanager.enums.CategoriaModificacao;
-import com.gsw.taskmanager.exception.BusinessException;
-import com.gsw.taskmanager.repository.AuditoriaLogRepository;
+import com.gsw.service_log.dto.anexo.AnexoDto;
+import com.gsw.service_log.dto.logs.AuditoriaResponseDto;
+import com.gsw.service_log.dto.logs.ModificacaoLogDto;
+import com.gsw.service_log.dto.logs.ResponsavelAlteracaoDto;
+import com.gsw.service_log.entity.AuditoriaLog;
+import com.gsw.service_log.repository.AuditoriaLogRepository;
+import com.gsw.service_log.dto.tarefa.TarefaDto;
+import com.gsw.service_log.enums.CategoriaModificacao;
+import com.gsw.service_log.dto.usuario.UsuarioDto;
+import com.gsw.service_log.exception.BusinessException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -49,7 +46,7 @@ public class AuditoriaLogService {
 
     // ------------------------- CRIAÇÃO -------------------------
 
-    public AuditoriaLog registrarCriacao(Tarefa tarefaNova){
+    public AuditoriaLog registrarCriacao(TarefaDto tarefaNova){
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
         String descricao = "Tarefa criada com título '" + tarefaNova.getTitulo() + "'.";
         CategoriaModificacao categoria = CategoriaModificacao.CRIACAO;
@@ -58,7 +55,7 @@ public class AuditoriaLogService {
         return auditoriaLogRepository.save(criarLog(tarefaNova.getId(), modificacoes));
     }
 
-    public void registrarAtualizacao(Tarefa tarefaAntiga, Tarefa tarefaNova) {
+    public void registrarAtualizacao(TarefaDto tarefaAntiga, TarefaDto tarefaNova) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         modificacoes.addAll(visualizadorDeMudancas(tarefaAntiga, tarefaNova));
@@ -74,7 +71,7 @@ public class AuditoriaLogService {
 
     // ------------------------- EXCLUSÃO -------------------------
 
-    public void registrarExclusao(Tarefa tarefa){
+    public void registrarExclusao(TarefaDto tarefa){
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
         String descricao = "Tarefa removida (soft delete)";
         CategoriaModificacao categoria = CategoriaModificacao.EXCLUSAO;
@@ -84,7 +81,7 @@ public class AuditoriaLogService {
     }
 
     // ------------------------- ATRIBUIÇÃO -----------------------
-    public void registrarAtribuicao(Tarefa tarefaAntiga, String usuarioAnterior, String usuarioNovo) {
+    public void registrarAtribuicao(TarefaDto tarefaAntiga, String usuarioAnterior, String usuarioNovo) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
         String descricao = "Responsável alterado de '" + usuarioAnterior + "' para '" + usuarioNovo + "'.";
         CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
@@ -93,12 +90,12 @@ public class AuditoriaLogService {
         auditoriaLogRepository.save(criarLog(tarefaAntiga.getId(), modificacoes));
     }
 
-    private List<ModificacaoLogDto> visualizadorDeMudancas(Tarefa tarefaAntiga, Tarefa tarefaNova) {
+    private List<ModificacaoLogDto> visualizadorDeMudancas(TarefaDto tarefaAntiga, TarefaDto tarefaNova) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         if (tarefaAntiga == null || tarefaNova == null) return modificacoes;
 
-        Field[] fields = Tarefa.class.getDeclaredFields();
+        Field[] fields = TarefaDto.class.getDeclaredFields();
 
         for (Field field : fields) {
             if (ignoredFields.contains(field.getName())) continue;
@@ -122,16 +119,16 @@ public class AuditoriaLogService {
         return modificacoes;
     }
 
-    private List<ModificacaoLogDto> visualizadorDeAnexos(List<Anexo> anexosAntigos, List<Anexo> anexosNovos) {
+    private List<ModificacaoLogDto> visualizadorDeAnexos(List<AnexoDto> anexosAntigos, List<AnexoDto> anexosNovos) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
-        Map<String, Anexo> antigosMap = new HashMap<>();
-        for (Anexo anexo : anexosAntigos) antigosMap.put(anexo.getId(), anexo);
+        Map<String, AnexoDto> antigosMap = new HashMap<>();
+        for (AnexoDto anexo : anexosAntigos) antigosMap.put(anexo.getId(), anexo);
 
-        Map<String, Anexo> novosMap = new HashMap<>();
-        for (Anexo anexo : anexosNovos) novosMap.put(anexo.getId(), anexo);
+        Map<String, AnexoDto> novosMap = new HashMap<>();
+        for (AnexoDto anexo : anexosNovos) novosMap.put(anexo.getId(), anexo);
 
-        for (Anexo novo : anexosNovos) {
+        for (AnexoDto novo : anexosNovos) {
             if (!antigosMap.containsKey(novo.getId())) {
                 String descricao = "Anexo '" + novo.getNome() + "' adicionado.";
                 CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
@@ -139,7 +136,7 @@ public class AuditoriaLogService {
             }
         }
 
-        for (Anexo antigo : anexosAntigos) {
+        for (AnexoDto antigo : anexosAntigos) {
             if (!novosMap.containsKey(antigo.getId())) {
                 String descricao = "Anexo '" + antigo.getNome() + "' removido.";
                 CategoriaModificacao categoria = CategoriaModificacao.EXCLUSAO;
@@ -147,8 +144,8 @@ public class AuditoriaLogService {
             }
         }
 
-        for (Anexo novo : anexosNovos) {
-            Anexo antigo = antigosMap.get(novo.getId());
+        for (AnexoDto novo : anexosNovos) {
+            AnexoDto antigo = antigosMap.get(novo.getId());
             if (antigo != null) {
                 if (!Objects.equals(antigo.getNome(), novo.getNome())) {
                     String descricao = "Anexo '" + antigo.getNome() + "' alterado: nome de '" + antigo.getNome() + "' para '" + novo.getNome() + "'.";
@@ -166,7 +163,7 @@ public class AuditoriaLogService {
     }
 
     private AuditoriaLog criarLog(String tarefaId, List<ModificacaoLogDto> modificacoes) {
-        Usuario usuario = obterUsuarioAutenticado();
+        UsuarioDto usuario = obterUsuarioAutenticado();
 
         AuditoriaLog log = new AuditoriaLog();
 
@@ -178,18 +175,18 @@ public class AuditoriaLogService {
         return log;
     }
 
-    private Usuario obterUsuarioAutenticado() {
+    private UsuarioDto obterUsuarioAutenticado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object principal = authentication.getPrincipal();
-        if (principal instanceof Usuario) {
-            return (Usuario) principal;
+        if (principal instanceof UsuarioDto) {
+            return (UsuarioDto) principal;
         } else {
             throw new BusinessException("Usuário autenticado inválido");
         }
     }
 
     public List<AuditoriaResponseDto> listarPorTarefaId(String tarefaId) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId).filter(Tarefa::isAtivo).orElseThrow(() -> new BusinessException("Tarefa não encontrada."));
+        TarefaDto tarefa = tarefaRepository.findById(tarefaId).filter(TarefaDto::isAtivo).orElseThrow(() -> new BusinessException("Tarefa não encontrada."));
         List<AuditoriaLog> logs = auditoriaLogRepository.findAllByTarefaId(tarefaId);
 
         // Formatadores BRL
@@ -212,7 +209,7 @@ public class AuditoriaLogService {
 
     public List<AuditoriaResponseDto> listarTodos() {
         List<AuditoriaLog> logs = auditoriaLogRepository.findAll();
-        List<Tarefa> tarefas = tarefaRepository.findAll();
+        List<TarefaDto> tarefas = tarefaRepository.findAll();
 
         DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
@@ -220,7 +217,7 @@ public class AuditoriaLogService {
         return logs.stream()
                 .flatMap(log -> log.getModificacoes().stream()
                         .map(modificacao -> {
-                            Tarefa tarefa = tarefas.stream()
+                            TarefaDto tarefa = tarefas.stream()
                                     .filter(t -> t.getId().equals(log.getTarefaId()))
                                     .findFirst()
                                     .orElse(null);

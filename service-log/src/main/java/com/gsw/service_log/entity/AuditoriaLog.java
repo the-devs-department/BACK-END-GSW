@@ -1,11 +1,13 @@
-package com.gsw.taskmanager.entity;
+package com.gsw.service_log.entity;
 
 
-import com.gsw.taskmanager.dto.logs.ModificacaoLogDto;
-import com.gsw.taskmanager.dto.logs.ResponsavelAlteracaoDto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.gsw.service_log.dto.logs.ModificacaoLogDto;
+import com.gsw.service_log.dto.logs.ResponsavelAlteracaoDto;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
