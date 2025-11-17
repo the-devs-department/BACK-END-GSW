@@ -2,7 +2,7 @@ package com.gsw.service_anexo.service;
 
 import java.io.IOException;
 
-import com.gsw.service_anexo.entity.Anexo;
+import com.gsw.service_anexo.dto.AnexoDto;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class FileService {
     private AnexoService anexoService;
 
     public ResponseEntity<Resource> criarResponseParaDownload(String tarefaId, String anexoId, HttpServletRequest request) {
-        Anexo anexo = anexoService.buscarAnexoPorId(tarefaId, anexoId);
+        AnexoDto anexo = anexoService.buscarAnexoPorId(tarefaId, anexoId);
         
         String fileName = extrairNomeArquivoDaUrl(anexo.getUrl());
         Resource resource = fileStorageService.loadFileAsResource(fileName);

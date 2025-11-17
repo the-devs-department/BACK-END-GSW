@@ -1,5 +1,6 @@
 package com.gsw.service_log.service;
 
+import com.gsw.service_log.client.TarefaClient;
 import com.gsw.service_log.dto.anexo.AnexoDto;
 import com.gsw.service_log.dto.logs.AuditoriaResponseDto;
 import com.gsw.service_log.dto.logs.ModificacaoLogDto;
@@ -10,9 +11,13 @@ import com.gsw.service_log.dto.tarefa.TarefaDto;
 import com.gsw.service_log.enums.CategoriaModificacao;
 import com.gsw.service_log.dto.usuario.UsuarioDto;
 import com.gsw.service_log.exception.BusinessException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -25,9 +30,11 @@ public class AuditoriaLogService {
 
     @Autowired
     private AuditoriaLogRepository auditoriaLogRepository;
-
     @Autowired
-    private TarefaRepository tarefaRepository;
+    private TarefaClient tarefaClient;
+
+    // @Autowired
+    // private TarefaRepository tarefaRepository;
 
     @Transient
     private static final Set<String> ignoredFields = Set.of(
@@ -186,13 +193,16 @@ public class AuditoriaLogService {
     }
 
     public List<AuditoriaResponseDto> listarPorTarefaId(String tarefaId) {
-        TarefaDto tarefa = tarefaRepository.findById(tarefaId).filter(TarefaDto::isAtivo).orElseThrow(() -> new BusinessException("Tarefa não encontrada."));
         List<AuditoriaLog> logs = auditoriaLogRepository.findAllByTarefaId(tarefaId);
-
-        // Formatadores BRL
+        ResponseEntity<TarefaDto> response = tarefaClient.buscarPorId(tarefaId);
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
+        } 
+        TarefaDto tarefa = response.getBody();
+        Optional.of(tarefa).filter(TarefaDto::isAtivo)
+        .orElseThrow(() -> new BusinessException("Tarefa não encontrada ou inativa."));
         DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-
         List<AuditoriaResponseDto> modificacoes = logs.stream()
                 .flatMap(log -> log.getModificacoes().stream()
                         .map(modificacao -> new AuditoriaResponseDto(
@@ -203,17 +213,20 @@ public class AuditoriaLogService {
                                 log.getCriadoEm().format(formatoHora)
                         ))
                 ).toList();
-
         return modificacoes;
     }
 
     public List<AuditoriaResponseDto> listarTodos() {
         List<AuditoriaLog> logs = auditoriaLogRepository.findAll();
-        List<TarefaDto> tarefas = tarefaRepository.findAll();
-
+        ResponseEntity<List<TarefaDto>> response = tarefaClient.listarTarefas();
+        List<TarefaDto> tarefas;
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+           tarefas = response.getBody();
+        } else {
+            tarefas = Collections.emptyList();
+        }
         DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-
         return logs.stream()
                 .flatMap(log -> log.getModificacoes().stream()
                         .map(modificacao -> {

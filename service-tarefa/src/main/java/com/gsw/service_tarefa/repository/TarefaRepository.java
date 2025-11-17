@@ -1,9 +1,9 @@
 package com.gsw.service_tarefa.repository;
+import com.gsw.service_tarefa.entity.Tarefa;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-import com.gsw.service_tarefa.entity.Tarefa;
-import java.util.List;
 import org.springframework.data.mongodb.repository.Query;
+import java.util.List;
 
 @Repository
 public interface TarefaRepository extends MongoRepository<Tarefa, String> {

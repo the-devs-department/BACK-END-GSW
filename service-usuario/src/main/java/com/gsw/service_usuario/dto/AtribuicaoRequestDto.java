@@ -1,4 +1,12 @@
 package com.gsw.service_usuario.dto;
 
-public record AtribuicaoRequestDto(String usuarioId) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AtribuicaoRequestDto {
+        private String ususarioId;
 }

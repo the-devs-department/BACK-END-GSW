@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.gsw.service_tarefa.dto.usuario.UsuarioResponsavelTarefaDto;
-import com.gsw.service_tarefa.entity.Anexo;
+import com.gsw.service_tarefa.dto.AnexoDTO;
+import com.gsw.service_tarefa.dto.UsuarioResponsavelDTO;
 import com.gsw.service_tarefa.enums.Status;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,7 +34,7 @@ public class Tarefa implements Serializable {
     @NotNull
     private String descricao;
 
-    private UsuarioResponsavelTarefaDto responsavel;
+    private UsuarioResponsavelDTO responsavel;
 
     @NotNull
     private String dataEntrega;
@@ -47,6 +47,6 @@ public class Tarefa implements Serializable {
     private boolean ativo;
 
     // ANEXOS:
-    private List<Anexo> anexos = new ArrayList<>();
+    private List<AnexoDTO> anexos = new ArrayList<>();
 
 }

@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.controller;
+package com.gsw.service_notificacao.controller;
 
 import com.gsw.taskmanager.entity.Notification;
 import com.gsw.taskmanager.repository.NotificationRepository;

@@ -1,6 +1,11 @@
 package com.gsw.service_tarefa.service;
 
+import com.gsw.service_tarefa.client.AuditoriaClient;
+import com.gsw.service_tarefa.client.UsuarioClient;
+import com.gsw.service_tarefa.dto.UsuarioResponsavelDTO;
+import com.gsw.service_tarefa.dto.UsuarioResponseDTO;
 import com.gsw.service_tarefa.entity.Tarefa;
+import com.gsw.service_tarefa.exceptions.Tarefa.TarefaNaoEncontradaException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,36 +17,38 @@ public class AtribuicaoService {
 
     @Autowired
     private TarefaService tarefaService;
-
     @Autowired
-    private UsuarioRepository usuarioRepository;
-
+    private AuditoriaClient logAuditoriaClient;
     @Autowired
-    private AuditoriaLogService auditoriaLogService;
+    private UsuarioClient usuarioClient;
 
     public void atribuirUsuarioATarefa(String tarefaId, String usuarioId) {
 
-        CompletableFuture<Tarefa> tarefaFuture = CompletableFuture.supplyAsync(() -> tarefaService.buscarPorId(tarefaId));
-        CompletableFuture<Usuario> usuarioFuture = CompletableFuture.supplyAsync(() -> usuarioRepository.findById(usuarioId).orElse(null));
+        CompletableFuture<Tarefa> tarefaFuture = CompletableFuture
+                .supplyAsync(() -> tarefaService.buscarPorId(tarefaId));
 
-        CompletableFuture.allOf(tarefaFuture, usuarioFuture).join();
+        CompletableFuture<UsuarioResponseDTO> usuarioFuture = CompletableFuture.supplyAsync(() -> {
+            var response = usuarioClient.findUserById(usuarioId);
+            if (response == null || response.getBody() == null) {
+                throw new TarefaNaoEncontradaException("Usuário não encontrado");
+            }
+            return response.getBody();
+        });
+
+        CompletableFuture<Void> combinado = CompletableFuture.allOf(tarefaFuture, usuarioFuture);
+
+        combinado.join(); // espera os dois terminarem
 
         Tarefa tarefa = tarefaFuture.join();
-        Usuario novoUsuario = usuarioFuture.join();
+        UsuarioResponseDTO usuario = usuarioFuture.join();
 
-        if (tarefa == null || novoUsuario == null) {
-            throw new TarefaNaoEncontradaException("Tarefa ou usuário não encontrado");
-        }
+        tarefa.setResponsavel(new UsuarioResponsavelDTO(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail()));
 
-        tarefa.setResponsavel(new UsuarioResponsavelTarefaDto(
-                novoUsuario.getId(),
-                novoUsuario.getNome(),
-                novoUsuario.getEmail()));
-
-        // Log de auditoria
-        auditoriaLogService.registrarAtribuicao(tarefa, tarefa.getResponsavel().nome(), novoUsuario.getNome());
-
-        // Salva a tarefa atualizada
+        logAuditoriaClient.registrarAtribuicao(tarefa, usuario.getNome(), usuario.getNome());
         tarefaService.salvarTarefa(tarefa);
     }
+
 }

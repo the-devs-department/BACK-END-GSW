@@ -1,19 +1,24 @@
 package com.gsw.service_usuario.dto;
 
-import jakarta.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.Length;
 import java.util.List;
 
-public record CriacaoUsuarioDto (
-        @NotNull
-        String nome,
+import org.hibernate.validator.constraints.Length;
+import com.gsw.service_usuario.dto.tarefa.TarefaDto;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CriacaoUsuarioDto {
         @NotNull
-        String email,
-
+        private String nome;
+        @NotNull
+        private String email;
         @NotNull
         @Length(min = 6, max = 20)
-        String senha,
-
-        List<Tarefa> tarefas
-        ) {}
+        private String senha;
+        private List<TarefaDto> tarefas;
+}

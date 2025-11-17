@@ -1,18 +1,17 @@
 package com.gsw.service_log.controller;
 
 import com.gsw.service_log.dto.logs.AuditoriaResponseDto;
+import com.gsw.service_log.dto.tarefa.TarefaDto;
+import com.gsw.service_log.entity.AuditoriaLog;
 import com.gsw.service_log.service.AuditoriaLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("logs")
+@RequestMapping("/logs")
 public class AuditoriaLogController {
 
     @Autowired
@@ -26,6 +25,27 @@ public class AuditoriaLogController {
     @GetMapping
     public ResponseEntity<List<AuditoriaResponseDto>> listarTodos() {
         return ResponseEntity.ok(auditoriaLogService.listarTodos());
+    }
+
+    @PostMapping("/registar-criacao")
+    public AuditoriaLog registrarCriacaoTarefa(@RequestBody TarefaDto tarefaDto) {
+        AuditoriaLog logCriado = auditoriaLogService.registrarCriacao(tarefaDto);
+        return logCriado;
+    }
+
+    @PostMapping("/registrar-atualizacao")
+    public void registrarAtualizacaoTarefa(@RequestBody TarefaDto tarefaAntiga, TarefaDto tarefaNova) {
+        auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaNova);
+    }
+
+    @PostMapping("/registrar-exclusao")
+    public void registrarExclusaoTarefa(@RequestBody TarefaDto tarefa) {
+        auditoriaLogService.registrarExclusao(tarefa);
+    }
+
+    @PostMapping("/registrar-atribuicao")
+    public void registrarAtribuicaoTarefa(@RequestBody TarefaDto tarefaAntiga, String usuarioAnterior, String usuarioNovo) {
+        auditoriaLogService.registrarAtribuicao(tarefaAntiga, usuarioNovo, usuarioNovo);
     }
 
 }

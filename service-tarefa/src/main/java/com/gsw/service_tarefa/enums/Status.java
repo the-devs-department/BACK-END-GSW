@@ -1,4 +1,4 @@
-package com.gsw.service_tarefa.enum;
+package com.gsw.service_tarefa.enums;
 
 public enum Status {
     NAO_INICIADA("nao_iniciada"),

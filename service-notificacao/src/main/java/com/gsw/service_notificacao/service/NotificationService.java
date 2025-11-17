@@ -1,6 +1,6 @@
-package com.gsw.taskmanager.service;
+package com.gsw.service_notificacao.service;
 
-import com.gsw.taskmanager.entity.Notification;
+import com.gsw.service_notificacao.entity.*;
 import com.gsw.taskmanager.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,7 +23,7 @@ public class NotificationService {
     public void sendNotification(String userId, String message, String link) { 
         try {
             
-            Notification notification = new Notification(userId, message, link);
+            Notification notification = new com.gsw.taskmanager.entity.Notification(userId, message, link);
             Notification savedNotification = notificationRepository.save(notification);
 
             messagingTemplate.convertAndSendToUser(

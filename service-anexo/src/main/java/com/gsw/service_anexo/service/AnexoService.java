@@ -2,9 +2,11 @@ package com.gsw.service_anexo.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
+import java.lang.foreign.Linker.Option;
 
 import com.gsw.service_anexo.entity.Anexo;
 import com.gsw.service_anexo.enums.TipoAnexo;
@@ -13,11 +15,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.gsw.service_anexo.client.TarefaClient;
 import com.gsw.service_anexo.dto.AnexoDto;
+import com.gsw.service_anexo.dto.tarefa.TarefaDto;
+import com.gsw.service_anexo.dto.usuario.UsuarioDto;
 import com.gsw.service_anexo.exceptions.AcessoNegadoAnexoException;
 import com.gsw.service_anexo.exceptions.AnexoNaoEncontradoException;
+import com.gsw.service_anexo.exceptions.BusinessException;
 import com.gsw.service_anexo.exceptions.LimiteAnexosExcedidoException;
 import com.gsw.service_anexo.exceptions.TarefaNaoEncontradaException;
 import com.gsw.service_anexo.exceptions.UploadNaoPermitidoException;
@@ -30,15 +38,16 @@ public class AnexoService {
     private static final long LIMITE_TOTAL_ANEXOS_BYTES = LIMITE_TOTAL_ANEXOS_MB * 1024 * 1024;
 
     @Autowired
-    private TarefaRepository tarefaRepository;
-
-    @Autowired
     private FileStorageService fileStorageService;
+    @Autowired TarefaClient tarefaClient;
 
-    // TODO REGISTRAR ADIÇÃO DE ANEXO NA TAREFA
-    public Anexo adicionarAnexo(String tarefaId, String usuarioId, MultipartFile arquivo) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
+    public AnexoDto adicionarAnexo(String tarefaId, String usuarioId, MultipartFile arquivo) {
+        ResponseEntity<TarefaDto> response = tarefaClient.fetchTaskById(tarefaId);
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
+        }
+        TarefaDto tarefa = response.getBody();
+         Optional.of(tarefa).orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
         if (tarefa.getStatus() == null) {
             throw new UploadNaoPermitidoException(tarefaId, "null");
@@ -57,8 +66,7 @@ public class AnexoService {
 
         String nomeArquivoArmazenado = fileStorageService.storeFile(arquivo);
 
-        // Criar o anexo
-        Anexo novoAnexo = new Anexo();
+        AnexoDto novoAnexo = new AnexoDto();
         novoAnexo.setId(new ObjectId().toString());
         novoAnexo.setUsuarioId(usuarioId);
         novoAnexo.setTarefaId(tarefaId);
@@ -69,21 +77,29 @@ public class AnexoService {
         novoAnexo.setNome(arquivo.getOriginalFilename());
 
         tarefa.getAnexos().add(novoAnexo);
-        tarefaRepository.save(tarefa);
+        tarefaClient.atualizarTarefa(tarefaId, tarefa);
 
         return novoAnexo;
     }
 
-    public List<Anexo> listarAnexosDaTarefa(String tarefaId) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
+    public List<AnexoDto> listarAnexosDaTarefa(String tarefaId) {
+        ResponseEntity<TarefaDto> response = tarefaClient.fetchTaskById(tarefaId);
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
+        }
+        TarefaDto tarefa = response.getBody();
+         Optional.of(tarefa).orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
         return tarefa.getAnexos();
     }
 
-    public Anexo buscarAnexoPorId(String tarefaId, String anexoId) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
+    public AnexoDto buscarAnexoPorId(String tarefaId, String anexoId) {
+        ResponseEntity<TarefaDto> response = tarefaClient.fetchTaskById(tarefaId);
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
+        }
+        TarefaDto tarefa = response.getBody();
+        Optional.of(tarefa).orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
         return tarefa.getAnexos().stream()
                 .filter(anexo -> anexo.getId().equals(anexoId))
@@ -91,12 +107,15 @@ public class AnexoService {
                 .orElseThrow(() -> new AnexoNaoEncontradoException("Anexo não encontrado"));
     }
 
-    // TODO REGISTRAR ALTERAÇÃO DO ANEXO
-    public Anexo atualizarAnexo(String tarefaId, String anexoId, AnexoDto anexoDto) {
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
+    public AnexoDto atualizarAnexo(String tarefaId, String anexoId, AnexoDto anexoDto) {
+        ResponseEntity<TarefaDto> response = tarefaClient.fetchTaskById(tarefaId);
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
+        }
+        TarefaDto tarefa = response.getBody();
+        Optional.of(tarefa).orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
-        Anexo anexoEncontrado = tarefa.getAnexos().stream()
+        AnexoDto anexoEncontrado = tarefa.getAnexos().stream()
                 .filter(anexo -> anexo.getId().equals(anexoId))
                 .findFirst()
                 .orElseThrow(() -> new AnexoNaoEncontradoException("Anexo não encontrado"));
@@ -108,21 +127,24 @@ public class AnexoService {
             anexoEncontrado.setTipo(anexoDto.getTipo());
         }
 
-        tarefaRepository.save(tarefa);
+        tarefaClient.atualizarTarefa(tarefaId, tarefa);
         return anexoEncontrado;
     }
 
-    // TODO REGISTRAR REMOÇÃO DO ANEXO
     public void removerAnexo(String tarefaId, String anexoId) {
 
-        Usuario usuarioAutenticado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UsuarioDto usuarioAutenticado = (UsuarioDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String usuarioAtual = usuarioAutenticado.getId();
         
-        Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
+         ResponseEntity<TarefaDto> response = tarefaClient.fetchTaskById(tarefaId);
+        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
+            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
+        }
+        TarefaDto tarefa = response.getBody();
+        Optional.of(tarefa).orElseThrow(() -> new TarefaNaoEncontradaException("Tarefa não encontrada"));
 
 
-        Anexo anexo = tarefa.getAnexos().stream()
+        AnexoDto anexo = tarefa.getAnexos().stream()
                 .filter(a -> a.getId().equals(anexoId))
                 .findFirst()
                 .orElseThrow(() -> new AnexoNaoEncontradoException("Attachment not found"));
@@ -130,7 +152,6 @@ public class AnexoService {
 
         validarPermissaoExclusao(anexo, tarefa, usuarioAtual);
 
-        // Remover arquivo físico
         if (anexo.getUrl() != null && !anexo.getUrl().isEmpty()) {
             fileStorageService.deleteFile(anexo.getUrl());
         }
@@ -141,10 +162,10 @@ public class AnexoService {
             throw new AnexoNaoEncontradoException("Attachment not found");
         }
 
-        tarefaRepository.save(tarefa);
+        tarefaClient.atualizarTarefa(tarefaId, tarefa);
     }
 
-    public void validarLimiteAnexos(Tarefa tarefa, Long novoTamanho) {
+    public void validarLimiteAnexos(TarefaDto tarefa, Long novoTamanho) {
         long tamanhoTotalAtual = calcularTamanhoTotalAnexos(tarefa);
 
         if (tamanhoTotalAtual + novoTamanho > LIMITE_TOTAL_ANEXOS_BYTES) {
@@ -173,17 +194,16 @@ public class AnexoService {
         }
     }
 
-    private void validarPermissaoExclusao(Anexo anexo, Tarefa tarefa, String usuarioAtual) {
+    private void validarPermissaoExclusao(AnexoDto anexo, TarefaDto tarefa, String usuarioAtual) {
         boolean podeExcluir = anexo.getUsuarioId().equals(usuarioAtual) || 
-                             tarefa.getResponsavel().equals(usuarioAtual);
-        
+                             tarefa.getResponsavel().getId().equals(usuarioAtual);
         if (!podeExcluir) {
             throw new AcessoNegadoAnexoException("Você não tem permissão para excluir este anexo. " +
                 "Apenas o usuário que enviou o anexo ou o criador da tarefa podem excluí-lo.");
         }
     }
 
-    public long calcularTamanhoTotalAnexos(Tarefa tarefa) {
+    public long calcularTamanhoTotalAnexos(TarefaDto tarefa) {
         if (tarefa.getAnexos() == null || tarefa.getAnexos().isEmpty()) {
             return 0L;
         }

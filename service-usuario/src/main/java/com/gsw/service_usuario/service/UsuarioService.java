@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.gsw.service_usuario.dto.UsuarioResponsavelTarefaDto;
+import com.gsw.service_usuario.dto.UsuarioAlteracaoEReseponsavel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,9 +14,10 @@ import org.springframework.stereotype.Service;
 
 import com.gsw.service_usuario.dto.CriacaoUsuarioDto;
 import com.gsw.service_usuario.dto.auth.LoginResponseDto;
-import com.gsw.service_usuario.dto.UsuarioAlteracaoDto;
+import com.gsw.service_usuario.dto.UsuarioAlteracaoEReseponsavel;
 import com.gsw.service_usuario.dto.UsuarioResponseDto;
 import com.gsw.service_usuario.entity.Usuario;
+import com.gsw.service_usuario.exceptions.BusinessException;
 import com.gsw.service_usuario.repository.UsuarioRepository;
 
 @Service
@@ -33,6 +34,7 @@ public class UsuarioService {
                 .stream()
                 .filter(Usuario::isAtivo)
                 .map(usuario -> new UsuarioResponseDto(
+                        usuario.getId(),
                         usuario.getNome(),
                         usuario.getEmail(),
                         usuario.getDataCadastro(),
@@ -46,6 +48,7 @@ public class UsuarioService {
         Optional<Usuario> usuarioBuscado = usuarioRepository.findById(uuid);
 
         return usuarioBuscado.map(usuario -> new UsuarioResponseDto(
+                usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getDataCadastro(),
@@ -64,10 +67,10 @@ public class UsuarioService {
         )).orElseThrow();
     }
 
-    public UsuarioResponsavelTarefaDto buscarUsuarioResponsavelTarefa(String email) {
+    public UsuarioAlteracaoEReseponsavel buscarUsuarioResponsavelTarefa(String email) {
         Optional<Usuario> usuarioBuscado = usuarioRepository.findByEmail(email);
 
-        return  usuarioBuscado.map(usuario -> new UsuarioResponsavelTarefaDto(
+        return  usuarioBuscado.map(usuario -> new UsuarioAlteracaoEReseponsavel(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail()
@@ -76,15 +79,15 @@ public class UsuarioService {
     }
 
     public UsuarioResponseDto criarUsuario(CriacaoUsuarioDto user) {
-        Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.email());
+        Optional<Usuario> usuarioEncontrado = usuarioRepository.findByEmail(user.getEmail());
 
         if (usuarioEncontrado.isPresent()) {
             throw new DataIntegrityViolationException("Usuário já existe");
         }
         Usuario usuario = new Usuario();
-        usuario.setEmail(user.email());
-        usuario.setNome(user.nome());
-        usuario.setSenha(passwordEncoder.encode(user.senha()));
+        usuario.setEmail(user.getEmail());
+        usuario.setNome(user.getNome());
+        usuario.setSenha(passwordEncoder.encode(user.getSenha()));
         usuario.setAtivo(true);
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setTarefas(new ArrayList<>());
@@ -93,6 +96,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
 
         return new UsuarioResponseDto(
+                usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getDataCadastro(),
@@ -101,17 +105,18 @@ public class UsuarioService {
         );
     }
 
-    public UsuarioResponseDto atualizarUsuario(UsuarioAlteracaoDto usuario) {
-        Usuario usuarioBanco = usuarioRepository.findById(usuario.id()).orElseThrow();
+    public UsuarioResponseDto atualizarUsuario(UsuarioAlteracaoEReseponsavel usuario) {
+        Usuario usuarioBanco = usuarioRepository.findById(usuario.getId()).orElseThrow();
 
-        if (usuario.email() != null) {
-            usuarioBanco.setEmail(usuario.email());
+        if (usuario.getEmail() != null) {
+            usuarioBanco.setEmail(usuario.getEmail());
         }
-        if (usuario.nome() != null) {
-            usuarioBanco.setNome(usuario.nome());
+        if (usuario.getNome() != null) {
+            usuarioBanco.setNome(usuario.getNome());
         }
         usuarioRepository.save(usuarioBanco);
         return new UsuarioResponseDto(
+                usuario.getId(),
                 usuarioBanco.getNome(),
                 usuarioBanco.getEmail(),
                 usuarioBanco.getDataCadastro(),

@@ -2,7 +2,6 @@ package com.gsw.service_usuario.controller;
 
 import java.util.List;
 
-import com.gsw.service_usuario.dto.UsuarioResponsavelTarefaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gsw.service_usuario.dto.CriacaoUsuarioDto;
 import com.gsw.service_usuario.dto.auth.LoginResponseDto;
-import com.gsw.service_usuario.dto.UsuarioAlteracaoDto;
 import com.gsw.service_usuario.dto.UsuarioResponseDto;
 import com.gsw.service_usuario.service.UsuarioService;
+import com.gsw.service_usuario.dto.UsuarioAlteracaoEReseponsavel;
 
 import jakarta.validation.Valid;
 
@@ -50,8 +49,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/assignedUser/{email}")
-    public ResponseEntity<UsuarioResponsavelTarefaDto> buscarUsuarioResponsavelTarefa(@PathVariable String email) {
-        UsuarioResponsavelTarefaDto usuario = usuarioService.buscarUsuarioResponsavelTarefa(email);
+    public ResponseEntity<UsuarioAlteracaoEReseponsavel> buscarUsuarioResponsavelTarefa(@PathVariable String email) {
+        UsuarioAlteracaoEReseponsavel usuario = usuarioService.buscarUsuarioResponsavelTarefa(email);
         return ResponseEntity.ok(usuario);
     }
 
@@ -63,7 +62,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/atualizar")
-    public ResponseEntity<UsuarioResponseDto> atualizarUsuario(@RequestBody @Valid UsuarioAlteracaoDto usuario) {
+    public ResponseEntity<UsuarioResponseDto> atualizarUsuario(@RequestBody @Valid UsuarioAlteracaoEReseponsavel usuario) {
         return ResponseEntity.ok(usuarioService.atualizarUsuario(usuario));
     }
 

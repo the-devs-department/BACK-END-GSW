@@ -2,7 +2,7 @@ package com.gsw.service_tarefa.controller;
 
 import com.gsw.service_tarefa.entity.Tarefa;
 import com.gsw.service_tarefa.service.TarefaService;
-import com.gsw.service_tarefa.dto.usuario.AtribuicaoRequestDto;
+import com.gsw.service_tarefa.dto.AtribuicaoRequestDTO;
 import com.gsw.service_tarefa.service.AtribuicaoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +30,9 @@ public class TarefaController {
     @PostMapping("/{tarefaId}/atribuir")
     public ResponseEntity<Void> atribuirTarefa(
             @PathVariable String tarefaId,
-            @RequestBody AtribuicaoRequestDto request) {
+            @RequestBody AtribuicaoRequestDTO request) {
 
-        atribuicaoService.atribuirUsuarioATarefa(tarefaId, request.usuarioId());
+        atribuicaoService.atribuirUsuarioATarefa(tarefaId, request.getUsuarioId());
         return ResponseEntity.ok().build();
     }
 

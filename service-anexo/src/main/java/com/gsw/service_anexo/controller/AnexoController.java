@@ -2,7 +2,6 @@ package com.gsw.service_anexo.controller;
 
 import java.util.List;
 
-import com.gsw.service_anexo.entity.Anexo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -14,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.gsw.service_anexo.dto.AnexoDto;
+import com.gsw.service_anexo.dto.usuario.UsuarioDto;
 import com.gsw.service_anexo.service.AnexoService;
 import com.gsw.service_anexo.service.FileService;
 
@@ -28,39 +28,39 @@ public class AnexoController {
     private FileService fileService;
 
     @GetMapping("/{tarefaId}/anexos")
-    public ResponseEntity<List<Anexo>> listarAnexos(@PathVariable String tarefaId) {
-        List<Anexo> anexos = anexoService.listarAnexosDaTarefa(tarefaId);
+    public ResponseEntity<List<AnexoDto>> listarAnexos(@PathVariable String tarefaId) {
+        List<AnexoDto> anexos = anexoService.listarAnexosDaTarefa(tarefaId);
         return ResponseEntity.ok(anexos);
     }
 
     @GetMapping("/{tarefaId}/anexos/{anexoId}")
-    public ResponseEntity<Anexo> buscarAnexo(
+    public ResponseEntity<AnexoDto> buscarAnexo(
             @PathVariable String tarefaId,
             @PathVariable String anexoId) {
         
-        Anexo anexo = anexoService.buscarAnexoPorId(tarefaId, anexoId);
+        AnexoDto anexo = anexoService.buscarAnexoPorId(tarefaId, anexoId);
         return ResponseEntity.ok(anexo);
     }
 
     @PostMapping("/{tarefaId}/anexos/upload")
-    public ResponseEntity<Anexo> adicionarAnexoComUpload(
+    public ResponseEntity<AnexoDto> adicionarAnexoComUpload(
             @PathVariable String tarefaId,
             @RequestParam("arquivo") MultipartFile arquivo) {
         
-        Usuario usuarioAutenticado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UsuarioDto usuarioAutenticado = (UsuarioDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String usuarioId = usuarioAutenticado.getId();
         
-        Anexo novoAnexo = anexoService.adicionarAnexo(tarefaId, usuarioId, arquivo);
+        AnexoDto novoAnexo = anexoService.adicionarAnexo(tarefaId, usuarioId, arquivo);
         return ResponseEntity.status(201).body(novoAnexo);
     }
 
     @PutMapping("/{tarefaId}/anexos/{anexoId}")
-    public ResponseEntity<Anexo> atualizarAnexo(
+    public ResponseEntity<AnexoDto> atualizarAnexo(
             @PathVariable String tarefaId,
             @PathVariable String anexoId,
             @Valid @RequestBody AnexoDto anexoRequest) {
         
-        Anexo anexoAtualizado = anexoService.atualizarAnexo(tarefaId, anexoId, anexoRequest);
+        AnexoDto anexoAtualizado = anexoService.atualizarAnexo(tarefaId, anexoId, anexoRequest);
         return ResponseEntity.ok(anexoAtualizado);
     }
 
