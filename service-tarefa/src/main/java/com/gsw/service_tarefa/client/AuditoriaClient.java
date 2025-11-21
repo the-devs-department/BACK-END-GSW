@@ -1,5 +1,7 @@
 package com.gsw.service_tarefa.client;
 
+import com.gsw.service_tarefa.dto.AtribuicaoDTO;
+import com.gsw.service_tarefa.dto.AtualizacaoDTO;
 import com.gsw.service_tarefa.dto.log.AuditoriaLogDTO;
 import com.gsw.service_tarefa.entity.Tarefa;
 
@@ -15,11 +17,11 @@ public interface AuditoriaClient {
     AuditoriaLogDTO registrarCriacao(@RequestBody Tarefa tarefa);
     
     @PostMapping("/registrar-atualizacao")
-    void registrarAtualizacao(@RequestBody Tarefa tarefaAntiga, Tarefa tarefaNova);
+    void registrarAtualizacao(@RequestBody AtualizacaoDTO taskUpdates);
 
     @PostMapping("/registrar-exclusao")
     void registrarExclusao(@RequestBody Tarefa tarefa);
 
     @PostMapping("/registrar-atribuicao")
-    void registrarAtribuicao(@RequestBody Tarefa tarefaAntiga, String usuarioAntigo, String usuarioNovo);
+    void registrarAtribuicao(@RequestBody AtribuicaoDTO  atribuicao);
 }

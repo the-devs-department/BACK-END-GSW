@@ -8,24 +8,24 @@ import java.util.Optional;
 import com.gsw.service_usuario.dto.UsuarioAlteracaoEReseponsavel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gsw.service_usuario.dto.CriacaoUsuarioDto;
 import com.gsw.service_usuario.dto.auth.LoginResponseDto;
-import com.gsw.service_usuario.dto.UsuarioAlteracaoEReseponsavel;
 import com.gsw.service_usuario.dto.UsuarioResponseDto;
 import com.gsw.service_usuario.entity.Usuario;
 import com.gsw.service_usuario.exceptions.BusinessException;
 import com.gsw.service_usuario.repository.UsuarioRepository;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -45,16 +45,16 @@ public class UsuarioService {
     }
 
     public UsuarioResponseDto buscarUsuarioPorId(String uuid) {
-        Optional<Usuario> usuarioBuscado = usuarioRepository.findById(uuid);
-
-        return usuarioBuscado.map(usuario -> new UsuarioResponseDto(
-                usuario.getId(),
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getDataCadastro(),
-                usuario.isAtivo(),
-                usuario.getTarefas()
-        )).orElseThrow();
+        return usuarioRepository.findById(uuid)
+                .map(usuario -> new UsuarioResponseDto(
+                        usuario.getId(),
+                        usuario.getNome(),
+                        usuario.getEmail(),
+                        usuario.getDataCadastro(),
+                        usuario.isAtivo(),
+                        usuario.getTarefas()
+                ))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado com ID: " + uuid));
     }
 
     public LoginResponseDto buscarUsuarioAoLogar(String uuid) {
@@ -139,5 +139,9 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
         usuario.setSenha(passwordEncoder.encode(novaSenha));
         usuarioRepository.save(usuario);
+    }
+
+    public Usuario buscarUsuarioPorEmail(String email) {
+        return usuarioRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
     }
 }

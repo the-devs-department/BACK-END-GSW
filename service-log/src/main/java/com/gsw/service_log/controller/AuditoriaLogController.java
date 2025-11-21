@@ -1,5 +1,7 @@
 package com.gsw.service_log.controller;
 
+import com.gsw.service_log.dto.AtribuicaoDTO;
+import com.gsw.service_log.dto.AtualizacaoDTO;
 import com.gsw.service_log.dto.logs.AuditoriaResponseDto;
 import com.gsw.service_log.dto.tarefa.TarefaDto;
 import com.gsw.service_log.entity.AuditoriaLog;
@@ -34,7 +36,9 @@ public class AuditoriaLogController {
     }
 
     @PostMapping("/registrar-atualizacao")
-    public void registrarAtualizacaoTarefa(@RequestBody TarefaDto tarefaAntiga, TarefaDto tarefaNova) {
+    public void registrarAtualizacaoTarefa(@RequestBody AtualizacaoDTO atualizacao) {
+        TarefaDto tarefaAntiga = atualizacao.getTarefaAntiga();
+        TarefaDto tarefaNova = atualizacao.getTarefaAtualizada();
         auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaNova);
     }
 
@@ -44,8 +48,11 @@ public class AuditoriaLogController {
     }
 
     @PostMapping("/registrar-atribuicao")
-    public void registrarAtribuicaoTarefa(@RequestBody TarefaDto tarefaAntiga, String usuarioAnterior, String usuarioNovo) {
-        auditoriaLogService.registrarAtribuicao(tarefaAntiga, usuarioNovo, usuarioNovo);
+    public void registrarAtribuicaoTarefa(@RequestBody AtribuicaoDTO atribuicao) {
+        String tarefaAntiga = atribuicao.getTarefaAntigaId();
+        String usuarioAntigo = atribuicao.getUsuarioAntigo();
+        String usuarioNovo = atribuicao.getUsuarioNovo();
+        auditoriaLogService.registrarAtribuicao(tarefaAntiga, usuarioAntigo, usuarioNovo);
     }
 
 }

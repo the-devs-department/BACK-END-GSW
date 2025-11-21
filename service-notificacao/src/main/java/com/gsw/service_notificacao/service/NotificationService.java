@@ -1,7 +1,7 @@
 package com.gsw.service_notificacao.service;
 
-import com.gsw.service_notificacao.entity.*;
-import com.gsw.taskmanager.repository.NotificationRepository;
+
+import com.gsw.service_notificacao.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class NotificationService {
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate; 
+    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -23,8 +23,8 @@ public class NotificationService {
     public void sendNotification(String userId, String message, String link) { 
         try {
             
-            Notification notification = new com.gsw.taskmanager.entity.Notification(userId, message, link);
-            Notification savedNotification = notificationRepository.save(notification);
+            com.gsw.taskmanager.entity.Notification notification = new com.gsw.taskmanager.entity.Notification(userId, message, link);
+            com.gsw.taskmanager.entity.Notification savedNotification = notificationRepository.save(notification);
 
             messagingTemplate.convertAndSendToUser(
                 userId, 

@@ -88,13 +88,13 @@ public class AuditoriaLogService {
     }
 
     // ------------------------- ATRIBUIÇÃO -----------------------
-    public void registrarAtribuicao(TarefaDto tarefaAntiga, String usuarioAnterior, String usuarioNovo) {
+    public void registrarAtribuicao(String tarefaAntigaId, String usuarioAnterior, String usuarioNovo) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
         String descricao = "Responsável alterado de '" + usuarioAnterior + "' para '" + usuarioNovo + "'.";
         CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
 
         modificacoes.add(new ModificacaoLogDto(categoria, descricao));
-        auditoriaLogRepository.save(criarLog(tarefaAntiga.getId(), modificacoes));
+        auditoriaLogRepository.save(criarLog(tarefaAntigaId, modificacoes));
     }
 
     private List<ModificacaoLogDto> visualizadorDeMudancas(TarefaDto tarefaAntiga, TarefaDto tarefaNova) {

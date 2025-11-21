@@ -1,8 +1,11 @@
 package com.gsw.service_tarefa.service;
 
 import com.gsw.service_tarefa.client.AuditoriaClient;
+import com.gsw.service_tarefa.client.NotificacaoClient;
+import com.gsw.service_tarefa.dto.AtualizacaoDTO;
 import com.gsw.service_tarefa.dto.UsuarioResponsavelDTO;
 import com.gsw.service_tarefa.dto.log.AuditoriaLogDTO;
+import com.gsw.service_tarefa.dto.notification.NotificationRequestDTO;
 import com.gsw.service_tarefa.entity.Tarefa;
 import com.gsw.service_tarefa.enums.Status;
 import com.gsw.service_tarefa.exceptions.BusinessException;
@@ -22,6 +25,8 @@ public class TarefaService {
     private TarefaRepository tarefaRepository;
     @Autowired
     private AuditoriaClient logAuditoriaClient;
+    @Autowired 
+    private NotificacaoClient notificacaoClient;
 
     public List<Tarefa> listarTodas() {
         return tarefaRepository.findAll()
@@ -50,7 +55,7 @@ public class TarefaService {
 
         try {
             Tarefa tarefaSalva = tarefaRepository.save(tarefa);
-            AuditoriaLogDTO log = logAuditoriaClient.registrarCriacao(tarefaSalva)
+            AuditoriaLogDTO log = logAuditoriaClient.registrarCriacao(tarefaSalva);
             System.out.println(log.getModificacoes());
             tarefaRepository.save(tarefaSalva); 
 
@@ -59,8 +64,8 @@ public class TarefaService {
                 String userIdParaNotificar = responsavelDto.getId();
                 String message = "Nova tarefa atribuída a você: " + tarefaSalva.getTitulo();
                 String link = "/tarefas/" + tarefaSalva.getId(); 
-                
-                notificationService.sendNotification(userIdParaNotificar, message, link);
+                NotificationRequestDTO notificacaoArgs = new NotificationRequestDTO(userIdParaNotificar, message, link);
+                notificacaoClient.createNotification(notificacaoArgs);
             }
             return tarefaSalva;
         } catch (Exception e) {
@@ -101,21 +106,24 @@ public class TarefaService {
 
         try {
             Tarefa tarefaSalva = tarefaRepository.save(tarefaBanco);
-            logAuditoriaClient.registrarAtualizacao(tarefaAntiga, tarefaBanco);
+            AtualizacaoDTO atualizacoes = new AtualizacaoDTO(tarefaAntiga, tarefaBanco);
+            logAuditoriaClient.registrarAtualizacao(atualizacoes);
 
             if (newResponsavelId != null && !newResponsavelId.equals(oldResponsavelId)) {
-                notificationService.sendNotification(
-                        newResponsavelId,
-                        "Você foi atribuído(a) à tarefa: " + tarefaSalva.getTitulo(),
-                        "/tarefas/" + tarefaSalva.getId());
+                String responsavalIdNotification = newResponsavelId;
+                String mensagem =  "Você foi atribuído(a) à tarefa: " + tarefaSalva.getTitulo();
+                String link = "/tarefas/" + tarefaSalva.getId();
+                NotificationRequestDTO notificacaoArgs =  new NotificationRequestDTO(responsavalIdNotification, mensagem, link);
+                notificacaoClient.createNotification(notificacaoArgs);
             }
             if (tarefaAtualizada.getDataEntrega() != null &&
                     !tarefaAtualizada.getDataEntrega().equals(tarefaAntiga.getDataEntrega()) &&
                     newResponsavelId != null) {
-                notificationService.sendNotification(
-                        newResponsavelId,
-                        "O prazo da tarefa '" + tarefaSalva.getTitulo() + "' foi alterado.",
-                        "/tarefas/" + tarefaSalva.getId());
+                        String responsavalIdNotification = newResponsavelId;
+                        String mensagem =  "O prazo da tarefa '" + tarefaSalva.getTitulo() + "' foi alterado.";
+                        String link = "/tarefas/" + tarefaSalva.getId();
+                        NotificationRequestDTO notificacaoArgs =  new NotificationRequestDTO(responsavalIdNotification, mensagem, link);
+                        notificacaoClient.createNotification(notificacaoArgs);
             }
 
             return tarefaSalva;
@@ -134,10 +142,10 @@ public class TarefaService {
 
             if (tarefa.getResponsavel() != null) {
                 String responsavelId = tarefa.getResponsavel().getId();
-                notificationService.sendNotification(
-                        responsavelId,
-                        "A tarefa '" + tarefa.getTitulo() + "' foi excluída.",
-                        "/tarefas/" + tarefa.getId());
+                String mensagem = "A tarefa '" + tarefa.getTitulo() + "' foi excluída.";
+                String link =  "/tarefas/" + tarefa.getId();
+                NotificationRequestDTO notificacao = new NotificationRequestDTO(responsavelId, mensagem, link);
+                notificacaoClient.createNotification(notificacao);
             }
 
         } else {

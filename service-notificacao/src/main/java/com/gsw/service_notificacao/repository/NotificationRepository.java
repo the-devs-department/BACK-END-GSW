@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.repository;
+package com.gsw.service_notificacao.repository;
 
 import com.gsw.taskmanager.entity.Notification;
 import org.springframework.data.mongodb.repository.MongoRepository;

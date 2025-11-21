@@ -1,7 +1,7 @@
 package com.gsw.service_notificacao.controller;
 
 import com.gsw.taskmanager.entity.Notification;
-import com.gsw.taskmanager.repository.NotificationRepository;
+import com.gsw.service_notificacao.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

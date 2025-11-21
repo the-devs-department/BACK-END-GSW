@@ -2,16 +2,11 @@ package com.gsw.service_usuario.controller;
 
 import java.util.List;
 
+import com.gsw.service_usuario.config.UpdatePasswordDTO;
+import com.gsw.service_usuario.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.gsw.service_usuario.dto.CriacaoUsuarioDto;
 import com.gsw.service_usuario.dto.auth.LoginResponseDto;
@@ -54,11 +49,23 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }
 
+    @GetMapping("/buscar-usuario-email")
+    public ResponseEntity<Usuario> buscarUsuarioPorEmail(@RequestParam String email) {
+        Usuario userFound = usuarioService.buscarUsuarioPorEmail(email);
+        return  ResponseEntity.ok(userFound);
+    }
+
     // CRIAR USUÁRIO
     @PostMapping("/criar")
     public ResponseEntity<UsuarioResponseDto> criarUsuario(@RequestBody @Valid CriacaoUsuarioDto usuario) {
         UsuarioResponseDto novoUsuario = usuarioService.criarUsuario(usuario);
         return ResponseEntity.ok(novoUsuario);
+    }
+
+    @PutMapping("/atualizar-senha")
+    public ResponseEntity<String> atualizarSenhaUsuario(@RequestBody UpdatePasswordDTO atualizarSenhaDto) {
+        usuarioService.atualizarSenha(atualizarSenhaDto.getEmail(), atualizarSenhaDto.getSenha());
+        return ResponseEntity.ok("Senha atualizada com sucesso.");
     }
 
     @PutMapping("/atualizar")

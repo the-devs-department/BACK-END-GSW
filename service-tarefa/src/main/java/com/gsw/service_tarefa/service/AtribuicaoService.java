@@ -2,6 +2,7 @@ package com.gsw.service_tarefa.service;
 
 import com.gsw.service_tarefa.client.AuditoriaClient;
 import com.gsw.service_tarefa.client.UsuarioClient;
+import com.gsw.service_tarefa.dto.AtribuicaoDTO;
 import com.gsw.service_tarefa.dto.UsuarioResponsavelDTO;
 import com.gsw.service_tarefa.dto.UsuarioResponseDTO;
 import com.gsw.service_tarefa.entity.Tarefa;
@@ -37,7 +38,7 @@ public class AtribuicaoService {
 
         CompletableFuture<Void> combinado = CompletableFuture.allOf(tarefaFuture, usuarioFuture);
 
-        combinado.join(); // espera os dois terminarem
+        combinado.join();
 
         Tarefa tarefa = tarefaFuture.join();
         UsuarioResponseDTO usuario = usuarioFuture.join();
@@ -47,7 +48,8 @@ public class AtribuicaoService {
                 usuario.getNome(),
                 usuario.getEmail()));
 
-        logAuditoriaClient.registrarAtribuicao(tarefa, usuario.getNome(), usuario.getNome());
+        AtribuicaoDTO atribDTO = new AtribuicaoDTO(tarefa.getId(), usuario.getNome(), usuario.getNome());
+        logAuditoriaClient.registrarAtribuicao(atribDTO);
         tarefaService.salvarTarefa(tarefa);
     }
 
