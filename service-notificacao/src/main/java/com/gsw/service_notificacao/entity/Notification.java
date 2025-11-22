@@ -1,4 +1,4 @@
-package com.gsw.taskmanager.entity;
+package com.gsw.service_notificacao.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

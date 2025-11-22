@@ -23,8 +23,8 @@ public class NotificationService {
     public void sendNotification(String userId, String message, String link) { 
         try {
             
-            com.gsw.taskmanager.entity.Notification notification = new com.gsw.taskmanager.entity.Notification(userId, message, link);
-            com.gsw.taskmanager.entity.Notification savedNotification = notificationRepository.save(notification);
+            com.gsw.service_notificacao.entity.Notification notification = new com.gsw.service_notificacao.entity.Notification(userId, message, link);
+            com.gsw.service_notificacao.entity.Notification savedNotification = notificationRepository.save(notification);
 
             messagingTemplate.convertAndSendToUser(
                 userId, 

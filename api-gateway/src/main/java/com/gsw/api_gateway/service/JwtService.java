@@ -6,7 +6,6 @@ import com.gsw.api_gateway.dto.TokenResponse;
 import com.gsw.api_gateway.dto.UsuarioDTO;
 import com.gsw.api_gateway.entity.Usuario;
 import com.gsw.api_gateway.exception.BusinessException;
-import com.gsw.api_gateway.repository.UsuarioRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -19,21 +18,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
 
 @Service
 public class JwtService {
-
-    private static final String AES_ALGORITHM = "AES";
-    private final UsuarioRepository usuarioRepository;
 
     @Value("${app.jwt.secret}")
     private String secret;
@@ -47,10 +44,6 @@ public class JwtService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public JwtService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
-
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -60,7 +53,7 @@ public class JwtService {
         Instant now = Instant.now();
         String jwt = Jwts.builder()
                 .id(UUID.randomUUID().toString())
-                .subject(usuario.getUsername())
+                .subject(usuario.getEmail())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expiration)))
                 .claim("id", usuario.getId())
@@ -74,7 +67,30 @@ public class JwtService {
 
     public UsernamePasswordAuthenticationToken parseEncryptedToken(String encryptedToken) {
         String jwt = decrypt(encryptedToken);
-        return buildAuthenticationFromJwt(jwt);
+
+        Claims claims = parseClaims(jwt);
+        String email = claims.getSubject();
+
+        UsuarioDTO dto;
+        try {
+            dto = usuarioClient.buscarUsuarioPorEmail(email).getBody();
+        } catch (Exception e) {
+            throw new BusinessException("Falha ao buscar usuário no microserviço: " + e.getMessage());
+        }
+
+        if (dto == null) {
+            throw new BusinessException("Usuário não encontrado");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setId(dto.id());
+        usuario.setNome(dto.nome());
+        usuario.setEmail(dto.email());
+        usuario.setSenha(dto.senha());
+        usuario.setAtivo(dto.ativo());
+        usuario.setRoles(dto.roles());
+
+        return new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
     }
 
     public <T> T extractClaim(String token, java.util.function.Function<Claims, T> resolver) {
@@ -104,15 +120,6 @@ public class JwtService {
         }
     }
 
-    private UsernamePasswordAuthenticationToken buildAuthenticationFromJwt(String jwt) {
-        Claims claims = parseClaims(jwt);
-        String email = claims.getSubject();
-
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
-        return new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-    }
-
     private Claims parseClaims(String jwt) {
         return Jwts.parser()
                 .verifyWith((javax.crypto.SecretKey) getSigningKey())
@@ -123,8 +130,8 @@ public class JwtService {
 
     private String encrypt(String plainText) {
         try {
-            SecretKeySpec keySpec = new SecretKeySpec(secret.substring(0, 16).getBytes(), AES_ALGORITHM);
-            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            SecretKeySpec keySpec = new SecretKeySpec(secret.substring(0, 16).getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, keySpec);
             byte[] encrypted = cipher.doFinal(plainText.getBytes());
             return Base64.getEncoder().encodeToString(encrypted);
@@ -135,8 +142,8 @@ public class JwtService {
 
     private String decrypt(String encryptedText) {
         try {
-            SecretKeySpec keySpec = new SecretKeySpec(secret.substring(0, 16).getBytes(), AES_ALGORITHM);
-            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            SecretKeySpec keySpec = new SecretKeySpec(secret.substring(0, 16).getBytes(), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, keySpec);
             byte[] decoded = Base64.getDecoder().decode(encryptedText);
             byte[] decrypted = cipher.doFinal(decoded);
@@ -147,19 +154,22 @@ public class JwtService {
     }
 
     public TokenResponse autenticar(LoginRequest request) {
+
         if (request.senha() == null || request.senha().isEmpty()) {
             throw new IllegalArgumentException("A senha não pode ser vazia no login.");
         }
+
         UsuarioDTO dto;
         try {
             dto = usuarioClient.buscarUsuarioPorEmail(request.email()).getBody();
         } catch (Exception e) {
-            System.err.println(">>> ERRO NA BUSCA: " + e.getMessage());
             throw new UsernameNotFoundException("Usuário não cadastrado ou erro na comunicação.");
         }
+
         if (dto == null) {
             throw new UsernameNotFoundException("Usuário não encontrado.");
         }
+
         Usuario usuario = new Usuario();
         usuario.setId(dto.id());
         usuario.setNome(dto.nome());
@@ -167,15 +177,15 @@ public class JwtService {
         usuario.setSenha(dto.senha());
         usuario.setAtivo(dto.ativo());
         usuario.setRoles(dto.roles());
+
         if (!usuario.isAtivo()) {
             throw new IllegalStateException("Usuário inativo");
         }
-        if (usuario.getSenha() == null) {
-            throw new IllegalStateException("Erro Crítico: Senha não retornada. Verifique o @JsonIgnore no microserviço.");
-        }
+
         if (!passwordEncoder.matches(request.senha(), usuario.getSenha())) {
             throw new BadCredentialsException("Senha incorreta.");
         }
+
         String token = generateToken(usuario);
         return new TokenResponse(token, usuario.getId());
     }

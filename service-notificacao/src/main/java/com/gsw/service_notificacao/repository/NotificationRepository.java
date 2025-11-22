@@ -1,6 +1,6 @@
 package com.gsw.service_notificacao.repository;
 
-import com.gsw.taskmanager.entity.Notification;
+import com.gsw.service_notificacao.entity.Notification;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
