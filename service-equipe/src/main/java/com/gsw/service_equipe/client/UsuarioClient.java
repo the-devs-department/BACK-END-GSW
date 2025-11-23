@@ -5,14 +5,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(
-        name = "service-usuario",
-        url = "http://localhost:8081/usuarios"
-)
+@FeignClient(name = "service-usuario", url = "http://localhost:8081/usuarios")
 public interface UsuarioClient {
 
-    @GetMapping("/{id}")
-    ResponseEntity<UsuarioResponseDto> findUserById(@PathVariable String id);
+    @GetMapping("/email/{email}")
+    ResponseEntity<UsuarioResponseDto> findByEmail(@PathVariable String email);
 
     @PutMapping("/{email}/atualizar-role")
     void atualizarRole(
@@ -20,3 +17,4 @@ public interface UsuarioClient {
             @RequestParam("novaRole") String novaRole
     );
 }
+

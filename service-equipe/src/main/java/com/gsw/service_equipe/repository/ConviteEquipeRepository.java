@@ -12,4 +12,6 @@ public interface ConviteEquipeRepository extends MongoRepository<ConviteEquipe, 
     Optional<ConviteEquipe> findByToken(String token);
 
     boolean existsByEmailConvidadoAndEquipeId(String emailConvidado, String equipeId);
+
+    void deleteByEquipeId(String equipeId);
 }

@@ -48,7 +48,7 @@ public class SecurityConfig {
                     .requestMatchers("/usuarios/**").permitAll()
                     .requestMatchers("/tarefas/**").authenticated()
                     .requestMatchers("/anexos/**").authenticated()
-                    .requestMatchers("/logs/**").authenticated()
+                    .requestMatchers("/logs/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/notificacoes/**").authenticated()
                     .requestMatchers("/equipes/**").authenticated()
                     .anyRequest().authenticated()
