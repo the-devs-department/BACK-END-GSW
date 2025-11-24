@@ -11,9 +11,9 @@ import com.gsw.service_log.dto.tarefa.TarefaDto;
 import com.gsw.service_log.enums.CategoriaModificacao;
 import com.gsw.service_log.dto.usuario.UsuarioDto;
 import com.gsw.service_log.exception.BusinessException;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
 import org.springframework.http.HttpStatus;
@@ -30,11 +30,9 @@ public class AuditoriaLogService {
 
     @Autowired
     private AuditoriaLogRepository auditoriaLogRepository;
+
     @Autowired
     private TarefaClient tarefaClient;
-
-    // @Autowired
-    // private TarefaRepository tarefaRepository;
 
     @Transient
     private static final Set<String> ignoredFields = Set.of(
@@ -53,197 +51,216 @@ public class AuditoriaLogService {
 
     // ------------------------- CRIAÇÃO -------------------------
 
-    public AuditoriaLog registrarCriacao(TarefaDto tarefaNova){
+    public AuditoriaLog registrarCriacao(TarefaDto tarefaNova) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
-        String descricao = "Tarefa criada com título '" + tarefaNova.getTitulo() + "'.";
-        CategoriaModificacao categoria = CategoriaModificacao.CRIACAO;
 
-        modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+        modificacoes.add(new ModificacaoLogDto(
+                CategoriaModificacao.CRIACAO,
+                "Tarefa criada com título '" + tarefaNova.getTitulo() + "'."
+        ));
+
         return auditoriaLogRepository.save(criarLog(tarefaNova.getId(), modificacoes));
     }
+
+    // ------------------------- ATUALIZAÇÃO -------------------------
 
     public void registrarAtualizacao(TarefaDto tarefaAntiga, TarefaDto tarefaNova) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         modificacoes.addAll(visualizadorDeMudancas(tarefaAntiga, tarefaNova));
-
         modificacoes.addAll(visualizadorDeAnexos(tarefaAntiga.getAnexos(), tarefaNova.getAnexos()));
 
-        if (modificacoes.isEmpty()) {
-            return;
+        if (!modificacoes.isEmpty()) {
+            auditoriaLogRepository.save(criarLog(tarefaNova.getId(), modificacoes));
         }
-
-        auditoriaLogRepository.save(criarLog(tarefaNova.getId(), modificacoes));
     }
 
     // ------------------------- EXCLUSÃO -------------------------
 
-    public void registrarExclusao(TarefaDto tarefa){
-        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
-        String descricao = "Tarefa removida (soft delete)";
-        CategoriaModificacao categoria = CategoriaModificacao.EXCLUSAO;
-        modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+    public void registrarExclusao(TarefaDto tarefa) {
+        List<ModificacaoLogDto> modificacoes = List.of(
+                new ModificacaoLogDto(CategoriaModificacao.EXCLUSAO,
+                        "Tarefa removida (soft delete)")
+        );
 
         auditoriaLogRepository.save(criarLog(tarefa.getId(), modificacoes));
     }
 
-    // ------------------------- ATRIBUIÇÃO -----------------------
-    public void registrarAtribuicao(String tarefaAntigaId, String usuarioAnterior, String usuarioNovo) {
-        List<ModificacaoLogDto> modificacoes = new ArrayList<>();
-        String descricao = "Responsável alterado de '" + usuarioAnterior + "' para '" + usuarioNovo + "'.";
-        CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
+    // ------------------------- ATRIBUIÇÃO -------------------------
 
-        modificacoes.add(new ModificacaoLogDto(categoria, descricao));
-        auditoriaLogRepository.save(criarLog(tarefaAntigaId, modificacoes));
+    public void registrarAtribuicao(String tarefaId, String usuarioAnterior, String usuarioNovo) {
+        List<ModificacaoLogDto> modificacoes = List.of(
+                new ModificacaoLogDto(CategoriaModificacao.EDICAO,
+                        "Responsável alterado de '" + usuarioAnterior +
+                                "' para '" + usuarioNovo + "'.")
+        );
+
+        auditoriaLogRepository.save(criarLog(tarefaId, modificacoes));
     }
 
-    private List<ModificacaoLogDto> visualizadorDeMudancas(TarefaDto tarefaAntiga, TarefaDto tarefaNova) {
+    // ------------------------- DETECTAR MUDANÇAS -------------------------
+
+    private List<ModificacaoLogDto> visualizadorDeMudancas(TarefaDto antiga, TarefaDto nova) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
+        if (antiga == null || nova == null) return modificacoes;
 
-        if (tarefaAntiga == null || tarefaNova == null) return modificacoes;
-
-        Field[] fields = TarefaDto.class.getDeclaredFields();
-
-        for (Field field : fields) {
+        for (Field field : TarefaDto.class.getDeclaredFields()) {
             if (ignoredFields.contains(field.getName())) continue;
 
             field.setAccessible(true);
             try {
-                Object valorAntigo = field.get(tarefaAntiga);
-                Object valorNovo = field.get(tarefaNova);
+                Object valorAntigo = field.get(antiga);
+                Object valorNovo = field.get(nova);
 
                 if (!Objects.equals(valorAntigo, valorNovo)) {
-                    String nomeCampo = fieldLabels.getOrDefault(field.getName(), field.getName());
-                    String descricao = nomeCampo + " alterado de '" + valorAntigo + "' para '" + valorNovo + "'.";
-                    CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
-                    modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+                    modificacoes.add(
+                            new ModificacaoLogDto(
+                                    CategoriaModificacao.EDICAO,
+                                    fieldLabels.getOrDefault(field.getName(), field.getName())
+                                            + " alterado de '" + valorAntigo + "' para '" + valorNovo + "'."
+                            )
+                    );
                 }
 
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+            } catch (IllegalAccessException ignored) {}
         }
         return modificacoes;
     }
 
-    private List<ModificacaoLogDto> visualizadorDeAnexos(List<AnexoDto> anexosAntigos, List<AnexoDto> anexosNovos) {
+    private List<ModificacaoLogDto> visualizadorDeAnexos(List<AnexoDto> antigos, List<AnexoDto> novos) {
         List<ModificacaoLogDto> modificacoes = new ArrayList<>();
 
         Map<String, AnexoDto> antigosMap = new HashMap<>();
-        for (AnexoDto anexo : anexosAntigos) antigosMap.put(anexo.getId(), anexo);
+        antigos.forEach(a -> antigosMap.put(a.getId(), a));
 
         Map<String, AnexoDto> novosMap = new HashMap<>();
-        for (AnexoDto anexo : anexosNovos) novosMap.put(anexo.getId(), anexo);
+        novos.forEach(a -> novosMap.put(a.getId(), a));
 
-        for (AnexoDto novo : anexosNovos) {
+        // adicionados
+        for (AnexoDto novo : novos) {
             if (!antigosMap.containsKey(novo.getId())) {
-                String descricao = "Anexo '" + novo.getNome() + "' adicionado.";
-                CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
-                modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+                modificacoes.add(new ModificacaoLogDto(
+                        CategoriaModificacao.EDICAO,
+                        "Anexo '" + novo.getNome() + "' adicionado."
+                ));
             }
         }
 
-        for (AnexoDto antigo : anexosAntigos) {
+        // removidos
+        for (AnexoDto antigo : antigos) {
             if (!novosMap.containsKey(antigo.getId())) {
-                String descricao = "Anexo '" + antigo.getNome() + "' removido.";
-                CategoriaModificacao categoria = CategoriaModificacao.EXCLUSAO;
-                modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+                modificacoes.add(new ModificacaoLogDto(
+                        CategoriaModificacao.EXCLUSAO,
+                        "Anexo '" + antigo.getNome() + "' removido."
+                ));
             }
         }
 
-        for (AnexoDto novo : anexosNovos) {
+        // modificados
+        for (AnexoDto novo : novos) {
             AnexoDto antigo = antigosMap.get(novo.getId());
             if (antigo != null) {
+
                 if (!Objects.equals(antigo.getNome(), novo.getNome())) {
-                    String descricao = "Anexo '" + antigo.getNome() + "' alterado: nome de '" + antigo.getNome() + "' para '" + novo.getNome() + "'.";
-                    CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
-                    modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+                    modificacoes.add(new ModificacaoLogDto(
+                            CategoriaModificacao.EDICAO,
+                            "Anexo '" + antigo.getNome() + "' alterado: nome de '" +
+                                    antigo.getNome() + "' para '" + novo.getNome() + "'."
+                    ));
                 }
+
                 if (!Objects.equals(antigo.getTipo(), novo.getTipo())) {
-                    String descricao = "Anexo '" + antigo.getNome() + "' alterado: tipo de '" + antigo.getTipo() + "' para '" + novo.getTipo() + "'.";
-                    CategoriaModificacao categoria = CategoriaModificacao.EDICAO;
-                    modificacoes.add(new ModificacaoLogDto(categoria, descricao));
+                    modificacoes.add(new ModificacaoLogDto(
+                            CategoriaModificacao.EDICAO,
+                            "Anexo '" + antigo.getNome() + "' alterado: tipo de '" +
+                                    antigo.getTipo() + "' para '" + novo.getTipo() + "'."
+                    ));
                 }
             }
         }
+
         return modificacoes;
     }
+
+    // ------------------------- CRIAR LOG -------------------------
 
     private AuditoriaLog criarLog(String tarefaId, List<ModificacaoLogDto> modificacoes) {
         UsuarioDto usuario = obterUsuarioAutenticado();
 
         AuditoriaLog log = new AuditoriaLog();
-
         log.setTarefaId(tarefaId);
         log.setResponsavel(new ResponsavelAlteracaoDto(usuario.getId(), usuario.getEmail()));
         log.setCriadoEm(LocalDateTime.now());
         log.setModificacoes(modificacoes);
-
         return log;
     }
 
+    // ------------------------- USUÁRIO AUTENTICADO -------------------------
+
     private UsuarioDto obterUsuarioAutenticado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UsuarioDto) {
-            return (UsuarioDto) principal;
-        } else {
-            throw new BusinessException("Usuário autenticado inválido");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.getPrincipal() instanceof UsuarioDto usuario) {
+            return usuario;
         }
+
+        throw new BusinessException("Usuário autenticado inválido");
     }
+
+    // ------------------------- CONSULTAS -------------------------
 
     public List<AuditoriaResponseDto> listarPorTarefaId(String tarefaId) {
         List<AuditoriaLog> logs = auditoriaLogRepository.findAllByTarefaId(tarefaId);
+
         ResponseEntity<TarefaDto> response = tarefaClient.buscarPorId(tarefaId);
-        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
-            throw new BusinessException("Tarefa com ID " + tarefaId + " não encontrada ou serviço indisponível. Status: " + response.getStatusCode());
-        } 
+
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            throw new BusinessException("Tarefa não encontrada. Status: " + response.getStatusCode());
+        }
+
         TarefaDto tarefa = response.getBody();
-        Optional.of(tarefa).filter(TarefaDto::isAtivo)
-        .orElseThrow(() -> new BusinessException("Tarefa não encontrada ou inativa."));
-        DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-        List<AuditoriaResponseDto> modificacoes = logs.stream()
-                .flatMap(log -> log.getModificacoes().stream()
-                        .map(modificacao -> new AuditoriaResponseDto(
-                                tarefa,
-                                log.getResponsavel(),
-                                modificacao,
-                                log.getCriadoEm().format(formatoData),
-                                log.getCriadoEm().format(formatoHora)
-                        ))
+        if (!tarefa.isAtivo()) {
+            throw new BusinessException("Tarefa não encontrada ou inativa.");
+        }
+
+        DateTimeFormatter d = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter h = DateTimeFormatter.ofPattern("HH:mm");
+
+        return logs.stream()
+                .flatMap(log ->
+                        log.getModificacoes().stream()
+                                .map(m -> new AuditoriaResponseDto(
+                                        tarefa,
+                                        log.getResponsavel(),
+                                        m,
+                                        log.getCriadoEm().format(d),
+                                        log.getCriadoEm().format(h)
+                                ))
                 ).toList();
-        return modificacoes;
     }
 
     public List<AuditoriaResponseDto> listarTodos() {
         List<AuditoriaLog> logs = auditoriaLogRepository.findAll();
-        ResponseEntity<List<TarefaDto>> response = tarefaClient.listarTarefas();
-        List<TarefaDto> tarefas;
-        if (response.getStatusCode() != HttpStatus.OK && response.getBody() == null) {
-           tarefas = response.getBody();
-        } else {
-            tarefas = Collections.emptyList();
-        }
-        DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-        return logs.stream()
-                .flatMap(log -> log.getModificacoes().stream()
-                        .map(modificacao -> {
-                            TarefaDto tarefa = tarefas.stream()
-                                    .filter(t -> t.getId().equals(log.getTarefaId()))
-                                    .findFirst()
-                                    .orElse(null);
 
-                            return new AuditoriaResponseDto(
-                                    tarefa,
-                                    log.getResponsavel(),
-                                    modificacao,
-                                    log.getCriadoEm().format(formatoData),
-                                    log.getCriadoEm().format(formatoHora)
-                            );
-                        })
-                )
-                .toList();
+        ResponseEntity<List<TarefaDto>> response = tarefaClient.listarTarefas();
+        List<TarefaDto> tarefas = response.getBody() != null ? response.getBody() : List.of();
+
+        DateTimeFormatter d = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter h = DateTimeFormatter.ofPattern("HH:mm");
+
+        return logs.stream()
+                .flatMap(log ->
+                        log.getModificacoes().stream()
+                                .map(m -> new AuditoriaResponseDto(
+                                        tarefas.stream()
+                                                .filter(t -> t.getId().equals(log.getTarefaId()))
+                                                .findFirst()
+                                                .orElse(null),
+                                        log.getResponsavel(),
+                                        m,
+                                        log.getCriadoEm().format(d),
+                                        log.getCriadoEm().format(h)
+                                ))
+                ).toList();
     }
 }

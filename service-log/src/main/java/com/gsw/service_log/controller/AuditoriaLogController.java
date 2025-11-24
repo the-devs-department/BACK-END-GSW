@@ -30,29 +30,33 @@ public class AuditoriaLogController {
     }
 
     @PostMapping("/registar-criacao")
-    public AuditoriaLog registrarCriacaoTarefa(@RequestBody TarefaDto tarefaDto) {
+    public ResponseEntity<AuditoriaLog> registrarCriacaoTarefa(@RequestBody TarefaDto tarefaDto) {
         AuditoriaLog logCriado = auditoriaLogService.registrarCriacao(tarefaDto);
-        return logCriado;
+        return ResponseEntity.ok(logCriado);
     }
 
     @PostMapping("/registrar-atualizacao")
-    public void registrarAtualizacaoTarefa(@RequestBody AtualizacaoDTO atualizacao) {
-        TarefaDto tarefaAntiga = atualizacao.getTarefaAntiga();
-        TarefaDto tarefaNova = atualizacao.getTarefaAtualizada();
-        auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaNova);
+    public ResponseEntity<Void> registrarAtualizacaoTarefa(@RequestBody AtualizacaoDTO atualizacao) {
+        auditoriaLogService.registrarAtualizacao(
+                atualizacao.getTarefaAntiga(),
+                atualizacao.getTarefaAtualizada()
+        );
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/registrar-exclusao")
-    public void registrarExclusaoTarefa(@RequestBody TarefaDto tarefa) {
+    public ResponseEntity<Void> registrarExclusaoTarefa(@RequestBody TarefaDto tarefa) {
         auditoriaLogService.registrarExclusao(tarefa);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/registrar-atribuicao")
-    public void registrarAtribuicaoTarefa(@RequestBody AtribuicaoDTO atribuicao) {
-        String tarefaAntiga = atribuicao.getTarefaAntigaId();
-        String usuarioAntigo = atribuicao.getUsuarioAntigo();
-        String usuarioNovo = atribuicao.getUsuarioNovo();
-        auditoriaLogService.registrarAtribuicao(tarefaAntiga, usuarioAntigo, usuarioNovo);
+    public ResponseEntity<Void> registrarAtribuicaoTarefa(@RequestBody AtribuicaoDTO atribuicao) {
+        auditoriaLogService.registrarAtribuicao(
+                atribuicao.getTarefaAntigaId(),
+                atribuicao.getUsuarioAntigo(),
+                atribuicao.getUsuarioNovo()
+        );
+        return ResponseEntity.ok().build();
     }
-
 }
