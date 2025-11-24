@@ -1,0 +1,58 @@
+package com.gsw.service_log.controller;
+
+import com.gsw.service_log.dto.AtribuicaoDTO;
+import com.gsw.service_log.dto.AtualizacaoDTO;
+import com.gsw.service_log.dto.logs.AuditoriaResponseDto;
+import com.gsw.service_log.dto.tarefa.TarefaDto;
+import com.gsw.service_log.entity.AuditoriaLog;
+import com.gsw.service_log.service.AuditoriaLogService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/logs")
+public class AuditoriaLogController {
+
+    @Autowired
+    private AuditoriaLogService auditoriaLogService;
+
+    @GetMapping("/{tarefaId}")
+    public ResponseEntity<List<AuditoriaResponseDto>> listarPorTarefaId(@PathVariable String tarefaId) {
+        return ResponseEntity.ok(auditoriaLogService.listarPorTarefaId(tarefaId));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AuditoriaResponseDto>> listarTodos() {
+        return ResponseEntity.ok(auditoriaLogService.listarTodos());
+    }
+
+    @PostMapping("/registar-criacao")
+    public AuditoriaLog registrarCriacaoTarefa(@RequestBody TarefaDto tarefaDto) {
+        AuditoriaLog logCriado = auditoriaLogService.registrarCriacao(tarefaDto);
+        return logCriado;
+    }
+
+    @PostMapping("/registrar-atualizacao")
+    public void registrarAtualizacaoTarefa(@RequestBody AtualizacaoDTO atualizacao) {
+        TarefaDto tarefaAntiga = atualizacao.getTarefaAntiga();
+        TarefaDto tarefaNova = atualizacao.getTarefaAtualizada();
+        auditoriaLogService.registrarAtualizacao(tarefaAntiga, tarefaNova);
+    }
+
+    @PostMapping("/registrar-exclusao")
+    public void registrarExclusaoTarefa(@RequestBody TarefaDto tarefa) {
+        auditoriaLogService.registrarExclusao(tarefa);
+    }
+
+    @PostMapping("/registrar-atribuicao")
+    public void registrarAtribuicaoTarefa(@RequestBody AtribuicaoDTO atribuicao) {
+        String tarefaAntiga = atribuicao.getTarefaAntigaId();
+        String usuarioAntigo = atribuicao.getUsuarioAntigo();
+        String usuarioNovo = atribuicao.getUsuarioNovo();
+        auditoriaLogService.registrarAtribuicao(tarefaAntiga, usuarioAntigo, usuarioNovo);
+    }
+
+}
