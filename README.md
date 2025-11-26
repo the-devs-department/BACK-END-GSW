@@ -328,6 +328,6 @@ Após fazer alterações no código:
 ## 📄 Documentação e Manuais <a name="documentacao"></a>
 
 - [**Documentação do Projeto**](/docs)
-- [**Manual do Usuário**]()
+- [**Manual do Usuário**](/docs/Manual%20de%20Usuário.md)
 
 ---
