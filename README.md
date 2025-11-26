@@ -113,7 +113,8 @@ Os microserviços devem ser executados na seguinte ordem para garantir que todas
 3. **service-anexo** (porta 8082)
 4. **service-log** (porta 8083)
 5. **service-notificacao** (porta 8084)
-6. **api-gateway** (porta 8086)
+6. **service-equipe** (porta 8085)
+7. **api-gateway** (porta 8086)
 
 ## 🏃 Executando os Microserviços
 
@@ -142,7 +143,11 @@ cd service-log
 cd service-notificacao
 .\mvnw.cmd spring-boot:run
 
-# Em outro terminal - 6. API Gateway (porta 8086)
+# Em outro terminal - 6. Service Equipe (porta 8085)
+cd service-equipe
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal - 7. API Gateway (porta 8086)
 cd api-gateway
 .\mvnw.cmd spring-boot:run
 ```
@@ -170,7 +175,11 @@ cd service-log
 cd service-notificacao
 ./mvnw spring-boot:run
 
-# Em outro terminal - 6. API Gateway (porta 8086)
+# Em outro terminal - 6. Service Equipe (porta 8085)
+cd service-equipe
+./mvnw spring-boot:run
+
+# Em outro terminal - 7. API Gateway (porta 8086)
 cd api-gateway
 ./mvnw spring-boot:run
 ```
@@ -190,10 +199,11 @@ mvn spring-boot:run
 | Serviço | Porta | Descrição |
 |---------|-------|-----------|
 | service-usuario | 8080 | Gerenciamento de usuários e autenticação |
-| service-tarefa | 8081 | Gerenciamento de tarefas e equipes |
+| service-tarefa | 8081 | Gerenciamento de tarefas |
 | service-anexo | 8082 | Gerenciamento de anexos de arquivos |
 | service-log | 8083 | Auditoria e logs de atividades |
 | service-notificacao | 8084 | Sistema de notificações e WebSocket |
+| service-equipe | 8085 | Gerenciamento de equipes e membros |
 | api-gateway | 8086 | Gateway principal (ponto de entrada) |
 
 ## 🔍 Verificando se os Serviços Estão Rodando
@@ -206,11 +216,16 @@ Após iniciar cada serviço, você pode verificar se estão funcionando acessand
 - Service Anexo: http://localhost:8082/actuator/health (se configurado)
 - Service Log: http://localhost:8083/actuator/health (se configurado)
 - Service Notificação: http://localhost:8084/actuator/health (se configurado)
+- Service Equipe: http://localhost:8085/actuator/health (se configurado)
 
 ### Swagger UI (Documentação da API)
 - API Gateway: http://localhost:8086/swagger-ui.html
 - Service Usuário: http://localhost:8080/swagger-ui.html
 - Service Tarefa: http://localhost:8081/swagger-ui.html
+- Service Anexo: http://localhost:8082/swagger-ui.html
+- Service Log: http://localhost:8083/swagger-ui.html
+- Service Notificação: http://localhost:8084/swagger-ui.html
+- Service Equipe: http://localhost:8085/swagger-ui.html
 
 ## 🌐 Acessando a Aplicação
 
@@ -222,7 +237,7 @@ Após todos os serviços estarem rodando, acesse a aplicação através do API G
 
 - `/usuarios/**` → Service Usuário (8080)
 - `/tarefas/**` → Service Tarefa (8081)
-- `/equipes/**` → Service Tarefa (8081)
+- `/equipes/**` → Service Equipe (8085)
 - `/anexos/**` → Service Anexo (8082)
 - `/logs/**` → Service Log (8083)
 - `/notificacoes/**` → Service Notificação (8084)
@@ -298,6 +313,16 @@ Após fazer alterações no código:
 - Mantenha todos os terminais visíveis para monitorar logs em tempo real
 - Execute os serviços em ordem para evitar erros de dependência
 - Sempre inicie o API Gateway por último
+
+## 📚 Documentação Adicional
+
+- [Rotas Swagger](docs/Rotas%20Swagger.md)
+- [Documentação das Sprints](docs/sprints/)
+- [Product Backlog](docs/Backlog%20do%20Produto.md)
+
+---
+
+✅ **Pronto!** Agora você tem todo o ambiente back-end rodando localmente.
 
 
 ## 📄 Documentação e Manuais <a name="documentacao"></a>
