@@ -314,6 +314,83 @@ Após fazer alterações no código:
 - Execute os serviços em ordem para evitar erros de dependência
 - Sempre inicie o API Gateway por último
 
+---
+
+✅ **Pronto!** Agora você tem todo o ambiente back-end rodando localmente.
+
+# 🎨 Como Executar o Projeto - Front-end
+
+Este documento descreve todos os passos necessários para executar a aplicação front-end do projeto GSW.
+
+## 📋 Pré-requisitos
+
+Antes de executar o projeto, certifique-se de ter instalado:
+
+- **Node.js 18+** ou superior
+- **npm** ou **yarn** (gerenciador de pacotes)
+- **Git** (para clonar o repositório)
+- **Back-end rodando** (todos os microserviços e API Gateway na porta 8086)
+
+## 🔧 Configuração Inicial
+
+### Instalação das Dependências
+
+Navegue até a pasta do front-end e instale as dependências:
+
+```bash
+# Entre na pasta Front
+cd Front
+
+# Instale as dependências com npm
+npm install
+
+# OU com yarn
+yarn install
+```
+
+
+## 🏃 Executando o Front-end
+
+### Modo Desenvolvimento
+
+```bash
+# Com npm
+npm run dev
+
+# OU com yarn
+yarn dev
+```
+
+A aplicação estará disponível em: **http://localhost:5173**
+
+
+## 🔗 Integração Front-end + Back-end
+
+### Ordem de Execução Completa
+
+Para rodar o projeto completo, siga esta ordem:
+
+1. **Inicie todos os microserviços do back-end** (conforme descrito na seção anterior)
+2. **Aguarde todos os serviços estarem rodando** (especialmente o API Gateway na porta 8086)
+3. **Inicie o front-end** com `npm run dev`
+
+### Verificando a Conexão
+
+Após iniciar o front-end:
+
+1. Acesse http://localhost:5173
+2. Tente fazer login ou criar uma conta
+3. Se houver erros de conexão, verifique se:
+   - O API Gateway está rodando na porta 8086
+   - Não há erros de CORS (já configurado no back-end)
+   - O navegador permite requisições para localhost
+
+---
+
+✅ **Pronto!** Agora você tem todo o ambiente (front-end + back-end) rodando localmente.
+
+---
+
 ## 📚 Documentação Adicional
 
 - [Rotas Swagger](docs/Rotas%20Swagger.md)
@@ -321,9 +398,6 @@ Após fazer alterações no código:
 - [Product Backlog](docs/Backlog%20do%20Produto.md)
 
 ---
-
-✅ **Pronto!** Agora você tem todo o ambiente back-end rodando localmente.
-
 
 ## 📄 Documentação e Manuais <a name="documentacao"></a>
 
