@@ -139,6 +139,7 @@ O TaskManager é uma plataforma web para gerenciar tarefas em equipe, com contro
 1. Acesse "Calendário"
 2. Veja todas as tarefas organizadas por data
 3. Clique em uma data para ver tarefas específicas
+4. Clique na tarefa para ser direcionado para ela
 
 ### Filtrar por Período
 - Visualize tarefas por: Dia, Semana, Mês
