@@ -60,12 +60,12 @@ O objetivo deste projeto é desenvolver uma plataforma web para a GSW focada no 
 - **Sprint 1**
   - **Status:** ✅ Concluído.
   - **Documentação:** [Link para a pasta de documentos da Sprint 1](/docs/sprints/sprint-01/Documento-sprint01.md)
-  - **Vídeo de Incremento:** [🎥 Vídeo de Incremento]([LINK_DO_VIDEO_DO_YOUTUBE](https://www.youtube.com/watch?v=EUEnL0IP2Kg))
+  - **Vídeo de Incremento:** [🎥 Vídeo de Incremento](https://www.youtube.com/watch?v=EUEnL0IP2Kg)
 
 - **Sprint 2**
   - **Status:** ✅ Concluído.
   - **Documentação:** [Link para a pasta de documentos da Sprint 2](/docs/sprints/sprint-01/Documento-sprint02.md)
-  - **Vídeo de Incremento:** [🎥 Vídeo de Incremento]([LINK_DO_VIDEO_DO_YOUTUBE](https://www.youtube.com/watch?v=zkHs3_X137I))
+  - **Vídeo de Incremento:** [🎥 Vídeo de Incremento](https://www.youtube.com/watch?v=zkHs3_X137I)
 
 - **Sprint 3**
   - **Status:** ✅ Concluído.
@@ -73,57 +73,232 @@ O objetivo deste projeto é desenvolver uma plataforma web para a GSW focada no 
   - **Vídeo de Incremento:** [🎥 Vídeo de Incremento](LINK_DO_VIDEO_DO_YOUTUBE)
 
 ------
-## 🚀 Como Executar o Projeto
+# 🚀 Como Executar o Projeto - Back-end
 
-1.  **Clone o repositório e seus submódulos:**
+Este documento descreve todos os passos necessários para executar a arquitetura de microserviços do projeto GSW.
 
-    Para garantir que você baixe tanto o projeto principal quanto os submódulos (os repositórios de `frontend` e `backend`), use o comando `git clone` com a flag `--recurse-submodules`.
+## 📋 Pré-requisitos
 
-    ```bash
-    git clone --recurse-submodules [https://github.com/the-devs-department/GSW-2025.2-3Sem.git]
-    ```
+Antes de executar o projeto, certifique-se de ter instalado:
 
-    *Se você já clonou o projeto sem os submódulos, pode rodar o seguinte comando para baixá-los:*
-    ```bash
-    git submodule update --init --recursive
-    ```
+- **Java 21** ou superior
+- **Maven 3.6+** (ou use o Maven Wrapper incluído no projeto)
+- **MongoDB** (acesso ao cluster configurado)
+- **Redis** (para cache e sessões)
+- **Git** (para clonar o repositório)
 
-2.  **Navegue até o diretório do projeto:**
+## 🔧 Configuração Inicial
 
-    ```bash
-    cd GSW-2025.2-3Sem
-    ```
+### 1. Variáveis de Ambiente
 
-3.  **Instale as dependências:**
+Crie um arquivo `.env` na raiz de cada microserviço e do API Gateway com as seguintes variáveis:
 
-    Agora, entre nas pastas dos submódulos para instalar as dependências de cada parte do projeto.
+```properties
+# Configurações de autenticação
+JWT_SECRET=sua_chave_secreta_aqui
+REDIS_URL=redis://localhost:6379
 
-    ```bash
-    # Instale as dependências do frontend
-    cd FRONT-END-GSW/
-    npm install
-    # Volte para a pasta principal
-    cd ../
-    # Instale as dependências do backend
-    cd BACK-END-GSW/
-    npm install
-    ```
+# Configurações do MongoDB
+MONGO_PASS=sua_senha_do_mongodb
+```
 
-4.  **Inicie a aplicação:**
+> ⚠️ **Importante:** Nunca commite o arquivo `.env` no repositório. Ele já está no `.gitignore`.
 
-    Inicie o frontend e o backend em terminais separados para que ambos possam rodar ao mesmo tempo.
+### 2. Ordem de Execução
 
-    ```bash
-    # No primeiro terminal, inicie o frontend:
-    cd FRONT-END-GSW/
-    npm start
-    ```
+Os microserviços devem ser executados na seguinte ordem para garantir que todas as dependências estejam disponíveis:
 
-    ```bash
-    # No segundo terminal, inicie o backend:
-    cd BACK-END-GSW/
-    npm start
-    ```
+1. **service-usuario** (porta 8080)
+2. **service-tarefa** (porta 8081)
+3. **service-anexo** (porta 8082)
+4. **service-log** (porta 8083)
+5. **service-notificacao** (porta 8084)
+6. **api-gateway** (porta 8086)
+
+## 🏃 Executando os Microserviços
+
+### Opção 1: Usando Maven Wrapper (Recomendado)
+
+#### Windows (PowerShell):
+
+```powershell
+# 1. Service Usuário (porta 8080)
+cd service-usuario
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal - 2. Service Tarefa (porta 8081)
+cd service-tarefa
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal - 3. Service Anexo (porta 8082)
+cd service-anexo
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal - 4. Service Log (porta 8083)
+cd service-log
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal - 5. Service Notificação (porta 8084)
+cd service-notificacao
+.\mvnw.cmd spring-boot:run
+
+# Em outro terminal - 6. API Gateway (porta 8086)
+cd api-gateway
+.\mvnw.cmd spring-boot:run
+```
+
+#### Linux/macOS:
+
+```bash
+# 1. Service Usuário (porta 8080)
+cd service-usuario
+./mvnw spring-boot:run
+
+# Em outro terminal - 2. Service Tarefa (porta 8081)
+cd service-tarefa
+./mvnw spring-boot:run
+
+# Em outro terminal - 3. Service Anexo (porta 8082)
+cd service-anexo
+./mvnw spring-boot:run
+
+# Em outro terminal - 4. Service Log (porta 8083)
+cd service-log
+./mvnw spring-boot:run
+
+# Em outro terminal - 5. Service Notificação (porta 8084)
+cd service-notificacao
+./mvnw spring-boot:run
+
+# Em outro terminal - 6. API Gateway (porta 8086)
+cd api-gateway
+./mvnw spring-boot:run
+```
+
+### Opção 2: Usando Maven Instalado
+
+Se você tem o Maven instalado globalmente:
+
+```powershell
+# Substitua .\mvnw.cmd por mvn em cada comando acima
+cd service-usuario
+mvn spring-boot:run
+```
+
+## 📊 Portas dos Serviços
+
+| Serviço | Porta | Descrição |
+|---------|-------|-----------|
+| service-usuario | 8080 | Gerenciamento de usuários e autenticação |
+| service-tarefa | 8081 | Gerenciamento de tarefas e equipes |
+| service-anexo | 8082 | Gerenciamento de anexos de arquivos |
+| service-log | 8083 | Auditoria e logs de atividades |
+| service-notificacao | 8084 | Sistema de notificações e WebSocket |
+| api-gateway | 8086 | Gateway principal (ponto de entrada) |
+
+## 🔍 Verificando se os Serviços Estão Rodando
+
+Após iniciar cada serviço, você pode verificar se estão funcionando acessando:
+
+### Health Check (APIs individuais)
+- Service Usuário: http://localhost:8080/actuator/health (se configurado)
+- Service Tarefa: http://localhost:8081/actuator/health (se configurado)
+- Service Anexo: http://localhost:8082/actuator/health (se configurado)
+- Service Log: http://localhost:8083/actuator/health (se configurado)
+- Service Notificação: http://localhost:8084/actuator/health (se configurado)
+
+### Swagger UI (Documentação da API)
+- API Gateway: http://localhost:8086/swagger-ui.html
+- Service Usuário: http://localhost:8080/swagger-ui.html
+- Service Tarefa: http://localhost:8081/swagger-ui.html
+
+## 🌐 Acessando a Aplicação
+
+Após todos os serviços estarem rodando, acesse a aplicação através do API Gateway:
+
+**URL Principal:** http://localhost:8086
+
+### Rotas Configuradas no Gateway:
+
+- `/usuarios/**` → Service Usuário (8080)
+- `/tarefas/**` → Service Tarefa (8081)
+- `/equipes/**` → Service Tarefa (8081)
+- `/anexos/**` → Service Anexo (8082)
+- `/logs/**` → Service Log (8083)
+- `/notificacoes/**` → Service Notificação (8084)
+- `/ws/**` → WebSocket do Service Notificação (8084)
+
+## 🛠️ Troubleshooting
+
+### Erro: "Port already in use"
+Se alguma porta já estiver em uso, você pode:
+1. Identificar o processo usando a porta:
+   ```powershell
+   netstat -ano | findstr :8080
+   ```
+2. Encerrar o processo ou alterar a porta no `application.properties`
+
+### Erro: "Unable to connect to MongoDB"
+- Verifique se a senha do MongoDB está correta no arquivo `.env`
+- Confirme que você tem acesso à internet (MongoDB Atlas)
+- Verifique as credenciais de acesso ao cluster
+
+### Erro: "Unable to connect to Redis"
+- Verifique se o Redis está rodando localmente:
+  ```powershell
+  redis-cli ping
+  ```
+- Ou inicie o Redis se necessário
+
+### Erro ao compilar
+Se houver erros de compilação, tente limpar e compilar novamente:
+```powershell
+.\mvnw.cmd clean install
+```
+
+## 🧪 Testando a Aplicação
+
+Após todos os serviços estarem rodando:
+
+1. Acesse o Swagger UI do API Gateway: http://localhost:8086/swagger-ui.html
+2. Teste os endpoints disponíveis
+3. Crie um usuário através do endpoint `/usuarios`
+4. Faça login para obter o token JWT
+5. Use o token nas requisições autenticadas
+
+## 📝 Logs
+
+Para acompanhar os logs de cada serviço:
+- Os logs aparecem no terminal onde o serviço foi iniciado
+- Nível de log padrão: INFO
+- Para mais detalhes, você pode alterar o nível em `application.properties`:
+  ```properties
+  logging.level.com.gsw=DEBUG
+  ```
+
+## ⏹️ Encerrando os Serviços
+
+Para parar cada serviço:
+- Pressione `Ctrl + C` no terminal onde o serviço está rodando
+- Ou feche o terminal
+
+## 🔄 Reiniciando Após Mudanças no Código
+
+Após fazer alterações no código:
+
+1. Pare o serviço afetado (`Ctrl + C`)
+2. Recompile e reinicie:
+   ```powershell
+   .\mvnw.cmd clean spring-boot:run
+   ```
+
+## 💡 Dicas
+
+- Use o **Spring Boot DevTools** (já incluído) para reload automático durante o desenvolvimento
+- Mantenha todos os terminais visíveis para monitorar logs em tempo real
+- Execute os serviços em ordem para evitar erros de dependência
+- Sempre inicie o API Gateway por último
+
 
 ## 📄 Documentação e Manuais <a name="documentacao"></a>
 
