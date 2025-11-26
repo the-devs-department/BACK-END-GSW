@@ -8,6 +8,7 @@ O objetivo deste projeto é desenvolver uma plataforma web para a GSW focada no 
 ---
 ## 👥 Membros da Equipe
 
+
 | Foto | Função | Nome | Links |
 | :---: | :---: | :---: | :---: |
 | <a target="_blank" rel="noopener noreferrer" href="https://github.com/IssamiU.png?size=50"><img src="https://github.com/IssamiU.png?size=50" width="50px" style="max-width: 100%;"></a> | **Product Owner** | Issami Umeoka | <a href="https://www.linkedin.com/in/issami-umeoka-786716226/" rel="nofollow"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a> <a href="https://github.com/IssamiU"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a> |
